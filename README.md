@@ -1,9 +1,42 @@
 # ChaoticLLM → STS-Prog: история поиска альтернативы attention
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.x-red)](https://pytorch.org/)
+[![CI](https://github.com/masterofnuggets313/chaotic-llm/actions/workflows/smoke.yml/badge.svg)](https://github.com/masterofnuggets313/chaotic-llm/actions/workflows/smoke.yml)
+[![Cite this repo](https://img.shields.io/badge/cite-CITATION.cff-blue)](CITATION.cff)
+
 > 🌐 **Язык / Language:** **Русский** (этот файл) · [English — переключатель с кнопкой RU⇄EN (README.html)](README.html)
 
 **Репозиторий:** экспериментальный поиск быстрой и экономичной архитектуры LLM,
 альтернативной классическому transformer с attention.
+
+---
+
+## Quick Start (быстрый старт)
+
+```bash
+git clone https://github.com/masterofnuggets313/chaotic-llm.git
+cd chaotic-llm/phase01/exp_vq
+
+# 1. Установка
+pip install torch numpy tokenizers pytest
+
+# 2. Smoke-тест (CPU, ~10 секунд)
+python -m pytest ../../tests/ -q
+
+# 3. Быстрый прогон STS-Prog (900K, 100 шагов обучения)
+python experiment_pc.py pc --driver sts_prog --d 192 --layers 8 --k 1.2 --sync-steps 8 --steps 100
+
+# 4. Инференс (генерация текста)
+python chat_sts_prog.py --prompt "def fibonacci(n):" --steps 80 --temp 0.8
+
+# 5. Fast-decode (W=64K, замер скорости)
+python exp_fast_decode.py
+```
+
+**Что дальше:** `README.html` (RU⇄EN переключатель), `CITATION.cff`, `LICENSE`,
+`SCIENCE_AUDIT.md` (аудит заявлений).
 
 ## Краткая история (от чего к чему пришли)
 
@@ -119,6 +152,15 @@ W=10M, 3.9 tok/s на W=262K. Можно ли ускорить без потер
 > Смысл строки: та же задача, что у исходного decode (0.15 tok/s), решается в ~9×
 > быстрее, а у трансформера — не решается вовсе.
 
+### Почему big-context decode работает (теория)
+
+В STS-Prog состояние h **детерминированно восстанавливается из статичных ключей e**:
+тождество h = G(e), где G — те же блоки модели (проверено: cos(h_last_exact, h_full[-1])
+= 0.99999994 при прогоне блоков только по драйверам). Следствие: состояние не содержит
+информации сверх ключей, поэтому его **не нужно хранить** — достаточно хранить коды
+ключей и разворачивать состояние теми же блоками на каждом decode-шаге.
+Fracode реализует именно это: хранение кодов (24B/поз) + генеративный unfold.
+
 ### Как работает big-context decode (Fracode)
 
 **Проблема:** на W=10M точные ключи e_all занимают 7.7GB (не влезают в 12GB VRAM),
@@ -152,10 +194,19 @@ Recon-ошибка: 0.11 (на нормализованных ключах).
 **Файлы:** `fracode_memory_probe.py`, `night_task5_fracode_forward.py`,
 `results/fracode_memory_report.md`, `DECODE_SPEED_FINDINGS.md`
 
+> **Полный теоретический анализ** (тождество h = G(e), спектральный диагност,
+> предел локальности) — см. `results/fold_unfold_report.md`.
+
 **Честный negative:** на равном W≤262K Transformer с KV-кэшем быстрее ~1.8× —
 причина не алгоритмическая (оба O(W·d·L)), а константа: у TF fused flash-attention
 kernel, у STS селекция = несколько kernel-запусков (на Windows без Triton fusion
 недоступен). Победа STS — на контекстах 2M+, где Transformer не запускается вовсе.
+
+**Связь с prior art по сжатию:** в отличие от KVQuant/CommVQ, которые сжимают
+**уже существующий** KV-кэш трансформера, STS-Prog **упраздняет само хранение
+состояния** через детерминированный key→state map (h = G(e)). Прямое численное
+сравнение с ними некорректно — разные точки отсчёта: они сжимают то, что без них
+хранилось бы в памяти; мы не храним состояние вовсе.
 
 **Файлы:** `exp_fast_decode.py`, `exp_gemm_fast_decode.py`, `exp_big_context.py`,
 `exp_decode_vs_transformer.py`, `exp_g_ablation*.py`, `DECODE_SPEED_FINDINGS.md`
@@ -170,6 +221,9 @@ kernel, у STS селекция = несколько kernel-запусков (н
 ```
 chaotic-llm/
 ├── README.md / README.html              ← этот файл / переключатель языка (RU⇄EN)
+├── CITATION.cff                         ← академическое цитирование
+├── LICENSE                              ← MIT
+├── .github/workflows/smoke.yml          ← CI: smoke-тесты на каждый push
 ├── .gitignore
 │
 ├── phase01/                               ← все эксперименты

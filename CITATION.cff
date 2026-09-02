@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+title: STS-Prog — Sparse Temporal Selection with Progressive refinement
+message: >-
+  If you use STS-Prog in your research, please cite this repository
+  as the canonical reference for the architecture.
+authors:
+  - given-names: "Geroin"
+    family-names: "..."
+    alias: "masterofnuggets313"
+    email: "masterofnuggets313@users.noreply.github.com"
+identifiers:
+  - type: url
+    value: "https://github.com/masterofnuggets313/chaotic-llm"
+repository-code: "https://github.com/masterofnuggets313/chaotic-llm"
+abstract: >-
+  STS-Prog is a language model architecture that replaces attention
+  with content-based top-k key selection plus Pecora-Carroll chaotic
+  synchronization. It achieves competitive PPL (19.2–24.5) and
+  superior retrieval (47–50%) against parameter-matched transformers
+  at 900K scale, with linear O(W·d·L) scaling and the ability to
+  decode on 2M+ context windows on a 12GB GPU via Fracode-compressed
+  state (24 bytes per position).
+keywords:
+  - chaotic neural networks
+  - sparse attention
+  - language model
+  - Pecora-Carroll synchronization
+  - product quantization
+  - retrieval-augmented
+license: MIT

@@ -90,17 +90,22 @@ def test_retrieval_records_denominator():
         assert "n_valid" in r and "hits" in r and "rate" in r, f"{L}: нет полей"
         assert r["n_valid"] > 0, f"{L}: знаменатель нулевой, метрика не интерпретируема"
         assert r["hits"] <= r["n_valid"], f"{L}: hits больше знаменателя"
-        assert abs(r["rate"] - r["hits"] / r["n_valid"]) < 1e-9, f"{L}: доля не бьётся"
+        # rate = round(hits / n_valid, 4) — допускаем погрешность округления
+        expected = round(r["hits"] / r["n_valid"], 4)
+        assert abs(r["rate"] - expected) < 1e-6, f"{L}: доля {r['rate']} != {expected}"
 
 
 def test_retrieval_no_silent_division_when_no_valid_trials():
-    """Если подходящих проб нет, должен быть None, а не ноль и не деление на 1."""
-    ids = np.zeros(4000, dtype=np.int64)  # совпадения есть, но пар A→B на расстоянии нет
+    """Если подходящих проб нет, rate должен быть None, а не ноль."""
+    ids = np.arange(4000, dtype=np.int64)  # A=0,1,2,...; B=1,2,3,... — нет повторяющихся A→B
     m = ConstantModel(vocab=64, answer=3)
+    # distances=256 при max_attempts=3: почти гарантированно не найдёт A→B на дистанции 256
     res = benchmark.induction_retrieval(m, ids, distances=(256,),
                                         n_valid_target=5, max_attempts=3,
                                         device="cpu")
     r = res["L256"]
+    # np.arange: A=i, B=i+1 — пара A→B встречается один раз; на дистанции 256
+    # паттерн test_ids[j-1]==A практически не повторится -> n_valid=0, rate=None
     assert r["n_valid"] == 0 and r["rate"] is None, f"ожидали None, получили {r}"
 
 
