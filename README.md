@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-red)](https://pytorch.org/)
-[![Tests](https://img.shields.io/badge/tests-pytest%207%20passed-brightgreen)](tests/)
+[![CI](https://github.com/masterofnuggets313/chaotic-llm/actions/workflows/smoke.yml/badge.svg)](https://github.com/masterofnuggets313/chaotic-llm/actions/workflows/smoke.yml)
 [![Cite this repo](https://img.shields.io/badge/cite-CITATION.cff-blue)](CITATION.cff)
 
 > 🌐 **Язык / Language:** **Русский** (этот файл) · [English — переключатель с кнопкой RU⇄EN (README.html)](README.html)

@@ -1,0 +1,28 @@
+name: smoke-tests
+
+on:
+  push:
+    branches: [master, pc-carroll]
+  pull_request:
+    branches: [master, pc-carroll]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install numpy tokenizers pytest
+
+      - name: Run smoke tests (CPU, synthetic corpus)
+        run: |
+          python -m pytest tests/ -q
