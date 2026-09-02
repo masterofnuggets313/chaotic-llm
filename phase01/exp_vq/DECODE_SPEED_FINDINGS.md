@@ -40,3 +40,22 @@ TF на W=10M → 56GB KV (невозможно).
 
 Файлы: exp_big_context.py, exp_recon_driver.py, exp_gemm_fast_decode.py,
 exp_adc_fast_decode.py, exp_g_ablation_K.py, exp_decode_vs_transformer.py.
+
+## Эксперимент 10 — torch.compile (Inductor) на decode-пути
+
+**Статус:** ✅ РАБОТАЕТ после `pip install triton-windows` (Windows: Triton не
+поставляется из коробки — нужен community-пакет `triton-windows 3.8.0`).
+
+Замеры (RTX 3060, реальный gemm_fast_decode, cos(compiled,eager)=1.000000):
+
+| Конфигурация | eager | compiled | speedup |
+|---|---|---|---|
+| маленькая модель d=64 L=4 | 11.8ms | 7.3ms | 1.61× |
+| decode W=65536 | 62.7ms | 41.0ms | 1.53× |
+| decode W=262144 | 80.3ms | 75.8ms | 1.06× |
+
+Вывод: ускорение 1.06–1.6× (не 2-5×): на больших W доминирует memory-bound
+GEMM (cuBLAS уже оптимален), compile фьюзит elementwise/Python overhead, доля
+которых падает с ростом W. Корректность бит-в-бит.
+
+Файл: `exp_compile_decode.py`
