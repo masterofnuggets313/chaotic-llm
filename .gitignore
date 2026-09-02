@@ -30,3 +30,4 @@ phase01/corpus_stack_test.txt
 
 # Chat corpus (58MB, rebuildable from train_chat.py) — do not commit
 phase01/exp_vq/ru_chat.json
+ru_chat_yandex.json
