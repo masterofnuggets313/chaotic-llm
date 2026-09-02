@@ -1,0 +1,31 @@
+{
+  "triton_available": false,
+  "baseline": {
+    "64": {
+      "ms_per_step": 0.339,
+      "tok_per_sec": 12078255.6
+    },
+    "128": {
+      "ms_per_step": 0.342,
+      "tok_per_sec": 23986190.6
+    },
+    "256": {
+      "ms_per_step": 0.376,
+      "tok_per_sec": 43579395.2
+    },
+    "512": {
+      "ms_per_step": 0.734,
+      "tok_per_sec": 44645069.5
+    },
+    "1024": {
+      "ms_per_step": 1.428,
+      "tok_per_sec": 45902187.7
+    },
+    "2048": {
+      "ms_per_step": 2.846,
+      "tok_per_sec": 46054926.4
+    }
+  },
+  "triton": {},
+  "triton_error": "No module named 'triton'"
+}

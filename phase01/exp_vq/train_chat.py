@@ -113,6 +113,10 @@ def main():
         uniform = pos_mask / pos_sum.clamp(min=1e-6)
         uniform[~valid] = 0.0
         target = 0.7 * gauss + 0.3 * uniform
+        # КРИТИЧНО: обнуляем target на замаскированных позициях (W-8:W),
+        # там sim=-1e9 → log_softmax даёт огромные отрицательные значения,
+        # и target*log_sm взрывается (это и был баг: aux=98M).
+        target[:, W - 8:] = 0.0
         return target, valid
 
     for step in range(1, STEPS + 1):

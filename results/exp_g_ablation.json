@@ -1,0 +1,64 @@
+{
+ "W": 262144,
+ "windows": 16,
+ "exact_ce": 6.0802,
+ "exact_ppl": 437.11,
+ "g_variants": {
+  "g_exact": {
+   "ce_mean": 6.2637,
+   "ce_std": 2.705,
+   "delta_ppl_mean_pct": 127.8,
+   "delta_ppl_std_pct": 323.9,
+   "cos_logits_mean": 0.9888
+  },
+  "g_last_4096": {
+   "ce_mean": 6.2628,
+   "ce_std": 2.7097,
+   "delta_ppl_mean_pct": 126.2,
+   "delta_ppl_std_pct": 321.4,
+   "cos_logits_mean": 0.9889
+  },
+  "g_last_8192": {
+   "ce_mean": 6.2653,
+   "ce_std": 2.7044,
+   "delta_ppl_mean_pct": 128.4,
+   "delta_ppl_std_pct": 324.8,
+   "cos_logits_mean": 0.9889
+  },
+  "g_last_16384": {
+   "ce_mean": 6.2665,
+   "ce_std": 2.7044,
+   "delta_ppl_mean_pct": 129.0,
+   "delta_ppl_std_pct": 324.6,
+   "cos_logits_mean": 0.9889
+  },
+  "g_mean_e": {
+   "ce_mean": 6.3942,
+   "ce_std": 2.206,
+   "delta_ppl_mean_pct": 382.0,
+   "delta_ppl_std_pct": 864.6,
+   "cos_logits_mean": 0.9867
+  },
+  "g_h_last": {
+   "ce_mean": 6.226,
+   "ce_std": 2.7904,
+   "delta_ppl_mean_pct": 98.6,
+   "delta_ppl_std_pct": 266.4,
+   "cos_logits_mean": 0.9795
+  },
+  "g_q0": {
+   "ce_mean": 6.3964,
+   "ce_std": 2.2367,
+   "delta_ppl_mean_pct": 388.8,
+   "delta_ppl_std_pct": 865.8,
+   "cos_logits_mean": 0.9855
+  },
+  "g_zero": {
+   "ce_mean": 6.2914,
+   "ce_std": 2.0447,
+   "delta_ppl_mean_pct": 406.5,
+   "delta_ppl_std_pct": 938.7,
+   "cos_logits_mean": 0.9841
+  }
+ }
+}

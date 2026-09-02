@@ -1,0 +1,18 @@
+{
+ "N_local": 8192,
+ "windows": 4,
+ "steps_per_window": 4,
+ "ce_exact": 5.902698054909706,
+ "ce_window": 8.888247705325398,
+ "ce_two_tier": 7.633586599356931,
+ "delta_window_vs_exact_ppl": 1879.7380885002628,
+ "delta_two_tier_vs_exact_ppl": 464.56681074768386,
+ "logit_cos_win_vs_exact": 0.9386751987040043,
+ "logit_cos_tt_vs_exact": 0.951429970562458,
+ "speed": {
+  "exact_full_s": 0.13812255859375,
+  "window_s": 0.01436924934387207,
+  "adc_s": 0.012280702590942383
+ },
+ "speedup_exact_over_window": 9.612371202442384
+}

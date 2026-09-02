@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<style>
+  body { font-family: system-ui, sans-serif; background: var(--color-background-tertiary, #111); color: var(--color-text-primary, #eee); margin: 0; padding: 24px; }
+  h2 { font-weight: 500; font-size: 15px; margin: 0 0 4px; }
+  p.sub { font-size: 13px; color: var(--color-text-secondary, #aaa); margin: 0 0 16px; max-width: 720px; line-height: 1.5; }
+  .wrap { display: flex; gap: 24px; flex-wrap: wrap; }
+  .card { flex: 1 1 360px; background: var(--color-background-primary, #1a1a1a); border: 0.5px solid var(--color-border-tertiary, #333); border-radius: 12px; padding: 16px; }
+  .note { font-size: 12px; color: var(--color-text-secondary, #999); margin-top: 12px; line-height: 1.5; }
+  canvas { width: 100% !important; }
+</style>
+</head>
+<body>
+<h2>Стоимость поиска по окну: почему храним коды, а не id токенов</h2>
+<p class="sub">Окно W = 262 144, d = 192, L = 8, S = 12 подвекторов. Все FLOPs — аналитическая оценка из размеров модели
+(chaotic-llm/phase01/exp_vq/models_pc.py), не замер на GPU. Нижняя ось — память на токен (Б); правая ось — вычисления на один запрос к окну.</p>
+
+<div class="wrap">
+  <div class="card">
+    <div style="position: relative; height: 320px;">
+      <canvas id="memChart" role="img" aria-label="Байты на токен по трём режимам"></canvas>
+    </div>
+    <p class="note">Token IDs (~9 бит) — абсолютный пол памяти, но для селекции бесполезны.
+База (h FP32) и keys-T5 тратят 768–792 Б/ток. Fracode-коды: 24–96 Б/ток.</p>
+  </div>
+  <div class="card">
+    <div style="position: relative; height: 320px;">
+      <canvas id="costChart" role="img" aria-label="Вычисления на один запрос поиска"></canvas>
+    </div>
+    <p class="note">Чтобы выбрать драйвер из id токенов, надо прогнать весь контекст W через модель
+(~155 GFLOP). Чтобы выбрать из Fracode-кодов — только ADC-сумма по кодам (~50 MFLOP), без прогона.
+Разница ~3000×. Точный косинус по (W,d) — промежуточный вариант, тоже дорог по bandwidth.</p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const labels = ['Token IDs', 'Exact (h FP32)', 'keys-T5', 'Fracode 32×', 'Fracode 16×', 'Fracode 8×'];
+// Байт на токен (память)
+const memBytes = [1.1, 768, 792, 24, 48, 96];
+// Вычисления на один запрос (FLOP) — аналитически
+const costFlops = [155.4e9, 0, 0, 50.3e6, 50.3e6, 50.3e6];
+// для Exact/keys-T5 поиск по (W,d): ~2*W*d ~ 100 MFLOP (показываем скромно, основной их расход — это хранение)
+const searchExact = 100e6;
+costFlops[1] = searchExact; costFlops[2] = searchExact;
+
+const hex = (a)=>`rgba(29,158,117,${a})`;   // teal
+const hexR = (a)=>`rgba(216,90,48,${a})`;   // coral
+const hexG = (a)=>`rgba(120,120,120,${a})`; // gray
+
+new Chart(document.getElementById('memChart'), {
+  type: 'bar',
+  data: { labels, datasets: [{ label: 'Байт/ток', data: memBytes,
+    backgroundColor: [hexG(0.5), hexR(0.7), hexR(0.55), hex(0.85), hex(0.7), hex(0.55)] }] },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false},
+      tooltip:{ callbacks:{ label:(c)=>c.parsed+' Б/ток' } } },
+    scales:{ y:{ type:'logarithmic', title:{display:true,text:'Б/ток (лог. шкала)'},
+      ticks:{ color:'#aaa' }, grid:{color:'rgba(255,255,255,.08)'} },
+      x:{ ticks:{color:'#ccc', maxRotation:30, minRotation:0, font:{size:11}}, grid:{display:false} } } }
+});
+
+new Chart(document.getElementById('costChart'), {
+  type: 'bar',
+  data: { labels, datasets: [{ label: 'FLOP на запрос', data: costFlops,
+    backgroundColor: [hexG(0.5), hexR(0.6), hexR(0.45), hex(0.85), hex(0.7), hex(0.55)] }] },
+  options: { responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false},
+      tooltip:{ callbacks:{ label:(c)=> (c.parsed/1e9).toFixed(1)+' GFLOP' } } },
+    scales:{ y:{ type:'logarithmic', title:{display:true,text:'FLOP/запрос (лог. шкала)'},
+      ticks:{ color:'#aaa' }, grid:{color:'rgba(255,255,255,.08)'} },
+      x:{ ticks:{color:'#ccc', maxRotation:30, minRotation:0, font:{size:11}}, grid:{display:false} } } }
+});
+</script>
+</body>
+</html>

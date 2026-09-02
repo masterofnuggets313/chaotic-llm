@@ -1,0 +1,57 @@
+{
+ "N_tokens": 2000000,
+ "d": 192,
+ "W": 262144,
+ "mode": "cyclic",
+ "fp32_bytes_per_tok": 768,
+ "compression": [
+  {
+   "name": "FR-8x",
+   "levels": 2,
+   "subvecs": 48,
+   "ratio": 7.98,
+   "bytes_per_tok": 96.197,
+   "codes_mb": 183.1,
+   "codebook_mb": 0.4,
+   "capacity_11gb_tokens": 122781460,
+   "recall_at_1_pct": 36.0,
+   "recall_at_8_pct": 26.1,
+   "hitrate_at_TOPK_pct": 46.8,
+   "driver_cos": 0.997,
+   "qcos_exact": 13.687,
+   "qcos_comp": 13.698
+  },
+  {
+   "name": "FR-16x",
+   "levels": 2,
+   "subvecs": 24,
+   "ratio": 15.93,
+   "bytes_per_tok": 48.197,
+   "codes_mb": 91.6,
+   "codebook_mb": 0.4,
+   "capacity_11gb_tokens": 245062060,
+   "recall_at_1_pct": 21.7,
+   "recall_at_8_pct": 19.1,
+   "hitrate_at_TOPK_pct": 32.0,
+   "driver_cos": 0.993,
+   "qcos_exact": 13.687,
+   "qcos_comp": 13.544
+  },
+  {
+   "name": "FR-32x",
+   "levels": 2,
+   "subvecs": 12,
+   "ratio": 31.74,
+   "bytes_per_tok": 24.197,
+   "codes_mb": 45.8,
+   "codebook_mb": 0.4,
+   "capacity_11gb_tokens": 488132884,
+   "recall_at_1_pct": 15.7,
+   "recall_at_8_pct": 15.2,
+   "hitrate_at_TOPK_pct": 31.2,
+   "driver_cos": 0.983,
+   "qcos_exact": 13.687,
+   "qcos_comp": 13.272
+  }
+ ]
+}

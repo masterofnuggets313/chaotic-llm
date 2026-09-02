@@ -1,0 +1,88 @@
+{
+ "W": 262144,
+ "mode": "cyclic",
+ "base_bytes_per_tok": 768,
+ "design": "conflict-probe: logit_gap(a vs b) exact vs gen; ctrl=logit_gap(a vs c); 4 query-\u043f\u043e\u0437\u0438\u0446\u0438\u0438",
+ "gap_exact": [
+  3.209,
+  3.53,
+  4.057,
+  2.931
+ ],
+ "ctrl_gap_exact": [
+  3.92,
+  3.374,
+  1.937,
+  5.66
+ ],
+ "runs": [
+  {
+   "compression": "8x",
+   "subvecs": 48,
+   "stored_bytes_per_tok": 96,
+   "ratio_x": 8.0,
+   "gap_gen": [
+    3.343,
+    3.5,
+    3.871,
+    2.847
+   ],
+   "ctrl_gap_gen": [
+    4.164,
+    3.618,
+    2.066,
+    5.306
+   ],
+   "fit_sec": 23.5
+  },
+  {
+   "compression": "16x",
+   "subvecs": 24,
+   "stored_bytes_per_tok": 48,
+   "ratio_x": 16.0,
+   "gap_gen": [
+    1.79,
+    2.191,
+    2.786,
+    1.61
+   ],
+   "ctrl_gap_gen": [
+    3.097,
+    2.551,
+    1.38,
+    4.655
+   ],
+   "fit_sec": 12.7
+  },
+  {
+   "compression": "32x",
+   "subvecs": 12,
+   "stored_bytes_per_tok": 24,
+   "ratio_x": 32.0,
+   "gap_gen": [
+    2.021,
+    2.235,
+    2.11,
+    0.576
+   ],
+   "ctrl_gap_gen": [
+    4.531,
+    4.382,
+    2.959,
+    5.649
+   ],
+   "fit_sec": 7.1
+  }
+ ],
+ "query_positions": [
+  65537,
+  131072,
+  196609,
+  262143
+ ],
+ "factA_pos": 65536,
+ "factB_pos": 196608,
+ "attr_a_idx": 83,
+ "attr_b_idx": 63,
+ "ctrl_attr_idx": 135
+}

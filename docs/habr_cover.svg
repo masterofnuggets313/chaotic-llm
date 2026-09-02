@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" font-family="'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="85%">
+      <stop offset="0%" stop-color="#101a33"/>
+      <stop offset="60%" stop-color="#0a0f20"/>
+      <stop offset="100%" stop-color="#05070f"/>
+    </radialGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <pattern id="g1" width="44" height="44" patternUnits="userSpaceOnUse" patternTransform="skewX(13)">
+      <path d="M44 0 L0 0 0 44" fill="none" stroke="#22d3ee" stroke-width="1" opacity="0.20"/>
+    </pattern>
+    <pattern id="g2" width="60" height="60" patternUnits="userSpaceOnUse" patternTransform="rotate(19)">
+      <path d="M60 0 L0 0 0 60" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.15"/>
+    </pattern>
+    <pattern id="g3" width="35" height="35" patternUnits="userSpaceOnUse" patternTransform="skewY(-10)">
+      <path d="M35 0 L0 0 0 35" fill="none" stroke="#f472b6" stroke-width="1" opacity="0.13"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#g1)"/>
+  <rect width="1200" height="630" fill="url(#g2)"/>
+  <rect width="1200" height="630" fill="url(#g3)"/>
+
+  <!-- faint "cat map" nod: a skewed tiled square cluster -->
+  <g opacity="0.5" transform="translate(840 70) rotate(14)">
+    <rect x="0" y="0" width="250" height="250" fill="none" stroke="#22d3ee" stroke-width="1.2" opacity="0.35"/>
+    <line x1="0" y1="83" x2="250" y2="83" stroke="#22d3ee" stroke-width="0.8" opacity="0.25"/>
+    <line x1="0" y1="167" x2="250" y2="167" stroke="#22d3ee" stroke-width="0.8" opacity="0.25"/>
+    <line x1="83" y1="0" x2="83" y2="250" stroke="#22d3ee" stroke-width="0.8" opacity="0.25"/>
+    <line x1="167" y1="0" x2="167" y2="250" stroke="#22d3ee" stroke-width="0.8" opacity="0.25"/>
+    <rect x="83" y="83" width="84" height="84" fill="#a855f7" opacity="0.18"/>
+  </g>
+
+  <!-- title -->
+  <text x="80" y="262" fill="#f5f7fb" font-size="78" font-weight="800" letter-spacing="1">БЕЗ ATTENTION.</text>
+  <text x="80" y="346" fill="url(#accent)" font-size="78" font-weight="800" letter-spacing="1">С ХАОСОМ.</text>
+
+  <!-- accent rule -->
+  <rect x="82" y="378" width="240" height="5" rx="2.5" fill="url(#accent)"/>
+
+  <!-- subtitle -->
+  <text x="82" y="430" fill="#c9d1e0" font-size="29" font-weight="500">Архитектура STS-Prog, обошедшая transformer</text>
+  <text x="82" y="468" fill="#c9d1e0" font-size="29" font-weight="500">при равных параметрах</text>
+
+  <!-- divider -->
+  <line x1="82" y1="540" x2="1118" y2="540" stroke="#2a3550" stroke-width="1.5"/>
+
+  <!-- tag line -->
+  <text x="82" y="582" fill="#7d8aa6" font-size="19" font-weight="500">Пекора–Кэрролл  ·  карта кота Арнольда  ·  честный бенчмарк на публичном корпусе (MIT)</text>
+</svg>

@@ -1,0 +1,7 @@
+{
+ "ref_ce": 7.5614,
+ "exact_ce": 7.2052,
+ "recon_ce": 8.3553,
+ "exact_dppl": -30.0,
+ "recon_dppl": 121.2
+}

@@ -1,0 +1,419 @@
+{
+  "1000000_sts": {
+    "model": "STS-Prog",
+    "target": 1000000,
+    "L": 4,
+    "d": 282,
+    "params": 1001789,
+    "ppl": 34.728,
+    "collapsed": false,
+    "train": {
+      "time_s": 3.0,
+      "tok_per_s": 328247.0,
+      "last_loss": 3.6019287109375,
+      "collapsed": false,
+      "train_vram_mb": 304.8,
+      "steps": 60,
+      "batch": 64
+    },
+    "context_sweep": {
+      "64": {
+        "vram_mb": 29.6,
+        "time_ms": 61.5,
+        "tok_per_s": 1040.7
+      },
+      "128": {
+        "vram_mb": 29.8,
+        "time_ms": 16.88,
+        "tok_per_s": 7583.0
+      },
+      "256": {
+        "vram_mb": 30.7,
+        "time_ms": 16.6,
+        "tok_per_s": 15417.4
+      }
+    },
+    "oom_at": null,
+    "projected_vram_mb": {
+      "128000": 15350.0,
+      "1000000": 119921.9,
+      "10000000": 1199218.8
+    },
+    "projection": "linear_O(N)",
+    "done": true
+  },
+  "1000000_tf": {
+    "model": "Transformer",
+    "target": 1000000,
+    "L": 4,
+    "D": 140,
+    "heads": 4,
+    "params": 1001622,
+    "ppl": 19.571,
+    "collapsed": false,
+    "train": {
+      "time_s": 3.8,
+      "tok_per_s": 261225.5,
+      "last_loss": 3.12933349609375,
+      "collapsed": false,
+      "train_vram_mb": 855.8,
+      "steps": 60,
+      "batch": 64
+    },
+    "context_sweep": {
+      "64": {
+        "vram_mb": 31.3,
+        "time_ms": 16.0,
+        "tok_per_s": 4000.5
+      },
+      "128": {
+        "vram_mb": 31.8,
+        "time_ms": 13.97,
+        "tok_per_s": 9161.2
+      },
+      "256": {
+        "vram_mb": 34.2,
+        "time_ms": 14.24,
+        "tok_per_s": 17973.0
+      }
+    },
+    "oom_at": null,
+    "projected_vram_mb": {
+      "128000": 55183333.3,
+      "1000000": 3368123372.4,
+      "10000000": 336812337239.6
+    },
+    "projection": "quadratic_O(N^2)",
+    "done": true
+  },
+  "5000000_sts": {
+    "model": "STS-Prog",
+    "target": 5000000,
+    "L": 8,
+    "d": 520,
+    "params": 4995105,
+    "ppl": 33.617,
+    "collapsed": false,
+    "train": {
+      "time_s": 268.4,
+      "tok_per_s": 244170.9,
+      "last_loss": 3.3528764247894287,
+      "collapsed": false,
+      "train_vram_mb": 923.4,
+      "steps": 4000,
+      "batch": 64
+    },
+    "context_sweep": {
+      "256": {
+        "vram_mb": 85.4,
+        "time_ms": 46.26,
+        "tok_per_s": 5533.8
+      },
+      "1024": {
+        "vram_mb": 95.5,
+        "time_ms": 16.43,
+        "tok_per_s": 62341.7
+      },
+      "4096": {
+        "vram_mb": 138.2,
+        "time_ms": 16.46,
+        "tok_per_s": 248911.5
+      },
+      "16384": {
+        "vram_mb": 308.9,
+        "time_ms": 20.71,
+        "tok_per_s": 790979.1
+      },
+      "65536": {
+        "vram_mb": 992.0,
+        "time_ms": 86.8,
+        "tok_per_s": 755020.1
+      },
+      "262144": {
+        "vram_mb": 3724.3,
+        "time_ms": 331.81,
+        "tok_per_s": 790051.6
+      }
+    },
+    "oom_at": null,
+    "projected_vram_mb": {
+      "128000": 1818.5,
+      "1000000": 14207.1,
+      "10000000": 142070.8
+    },
+    "projection": "linear_O(N)",
+    "done": true
+  },
+  "5000000_tf": {
+    "model": "Transformer",
+    "target": 5000000,
+    "L": 8,
+    "D": 220,
+    "heads": 4,
+    "params": 4951832,
+    "ppl": 33.002,
+    "collapsed": false,
+    "train": {
+      "time_s": 410.0,
+      "tok_per_s": 159862.6,
+      "last_loss": 3.4731616973876953,
+      "collapsed": false,
+      "train_vram_mb": 3724.3,
+      "steps": 4000,
+      "batch": 64
+    },
+    "context_sweep": {
+      "256": {
+        "vram_mb": 86.7,
+        "time_ms": 21.58,
+        "tok_per_s": 11863.9
+      },
+      "1024": {
+        "vram_mb": 144.1,
+        "time_ms": 27.45,
+        "tok_per_s": 37299.5
+      },
+      "4096": {
+        "vram_mb": 1003.9,
+        "time_ms": 76.21,
+        "tok_per_s": 53749.7
+      },
+      "16384": {
+        "vram_mb": 14522.1,
+        "time_ms": 15169.24,
+        "tok_per_s": 1080.1
+      },
+      "65536": {
+        "oom": true
+      }
+    },
+    "oom_at": 65536,
+    "projected_vram_mb": {
+      "128000": 6448323.1,
+      "1000000": 393574405.5,
+      "10000000": 39357440546.2
+    },
+    "projection": "quadratic_O(N^2)",
+    "done": true
+  },
+  "20000000_sts": {
+    "model": "STS-Prog",
+    "target": 20000000,
+    "L": 12,
+    "d": 979,
+    "params": 19981436,
+    "ppl": 66.051,
+    "collapsed": false,
+    "train": {
+      "time_s": 215.9,
+      "tok_per_s": 75894.2,
+      "last_loss": 4.260993957519531,
+      "collapsed": false,
+      "train_vram_mb": 1415.4,
+      "steps": 2000,
+      "batch": 32
+    },
+    "context_sweep": {
+      "256": {
+        "vram_mb": 275.4,
+        "time_ms": 54.12,
+        "tok_per_s": 4730.6
+      },
+      "1024": {
+        "vram_mb": 292.9,
+        "time_ms": 24.8,
+        "tok_per_s": 41285.1
+      },
+      "4096": {
+        "vram_mb": 376.5,
+        "time_ms": 25.54,
+        "tok_per_s": 160351.2
+      },
+      "16384": {
+        "vram_mb": 699.3,
+        "time_ms": 68.78,
+        "tok_per_s": 238204.8
+      },
+      "65536": {
+        "vram_mb": 1979.1,
+        "time_ms": 266.97,
+        "tok_per_s": 245480.6
+      },
+      "262144": {
+        "vram_mb": 7127.9,
+        "time_ms": 1030.8,
+        "tok_per_s": 254311.4
+      }
+    },
+    "oom_at": null,
+    "projected_vram_mb": {
+      "128000": 3480.4,
+      "1000000": 27190.8,
+      "10000000": 271907.8
+    },
+    "projection": "linear_O(N)",
+    "done": true
+  },
+  "20000000_tf": {
+    "model": "Transformer",
+    "target": 20000000,
+    "L": 12,
+    "D": 368,
+    "heads": 4,
+    "params": 20030752,
+    "ppl": 46.338,
+    "collapsed": false,
+    "train": {
+      "time_s": 253.3,
+      "tok_per_s": 64678.3,
+      "last_loss": 4.017520904541016,
+      "collapsed": false,
+      "train_vram_mb": 7127.9,
+      "steps": 2000,
+      "batch": 32
+    },
+    "context_sweep": {
+      "256": {
+        "vram_mb": 294.8,
+        "time_ms": 33.23,
+        "tok_per_s": 7704.3
+      },
+      "1024": {
+        "vram_mb": 372.5,
+        "time_ms": 38.19,
+        "tok_per_s": 26816.4
+      },
+      "4096": {
+        "vram_mb": 1484.2,
+        "time_ms": 115.38,
+        "tok_per_s": 35501.0
+      },
+      "16384": {
+        "vram_mb": 18897.8,
+        "time_ms": 53766.96,
+        "tok_per_s": 304.7
+      },
+      "65536": {
+        "oom": true
+      }
+    },
+    "oom_at": 65536,
+    "projected_vram_mb": {
+      "128000": 20530789.2,
+      "1000000": 1253099925.8,
+      "10000000": 125309992581.6
+    },
+    "projection": "quadratic_O(N^2)",
+    "done": true
+  },
+  "100000000_sts": {
+    "model": "STS-Prog",
+    "target": 100000000,
+    "L": 16,
+    "d": 2046,
+    "params": 99989045,
+    "ppl": 149.67,
+    "collapsed": false,
+    "train": {
+      "time_s": 198.7,
+      "tok_per_s": 20615.0,
+      "last_loss": 4.8955078125,
+      "collapsed": false,
+      "train_vram_mb": 3046.5,
+      "steps": 1000,
+      "batch": 16
+    },
+    "context_sweep": {
+      "256": {
+        "vram_mb": 1305.2,
+        "time_ms": 54.72,
+        "tok_per_s": 4678.5
+      },
+      "1024": {
+        "vram_mb": 1329.2,
+        "time_ms": 36.19,
+        "tok_per_s": 28296.8
+      },
+      "4096": {
+        "vram_mb": 1494.4,
+        "time_ms": 59.91,
+        "tok_per_s": 68369.4
+      },
+      "16384": {
+        "vram_mb": 2166.6,
+        "time_ms": 215.22,
+        "tok_per_s": 76128.4
+      },
+      "65536": {
+        "vram_mb": 4854.9,
+        "time_ms": 826.11,
+        "tok_per_s": 79331.2
+      },
+      "262144": {
+        "vram_mb": 15595.1,
+        "time_ms": 30912.62,
+        "tok_per_s": 8480.2
+      }
+    },
+    "oom_at": null,
+    "projected_vram_mb": {
+      "128000": 7614.8,
+      "1000000": 59490.6,
+      "10000000": 594905.9
+    },
+    "projection": "linear_O(N)",
+    "done": true
+  },
+  "100000000_tf": {
+    "model": "Transformer",
+    "target": 100000000,
+    "L": 16,
+    "D": 716,
+    "heads": 4,
+    "params": 99497304,
+    "ppl": 138.803,
+    "collapsed": false,
+    "train": {
+      "time_s": 241.2,
+      "tok_per_s": 16985.1,
+      "last_loss": 4.83233642578125,
+      "collapsed": false,
+      "train_vram_mb": 15595.1,
+      "steps": 1000,
+      "batch": 16
+    },
+    "context_sweep": {
+      "256": {
+        "vram_mb": 1349.9,
+        "time_ms": 40.14,
+        "tok_per_s": 6377.7
+      },
+      "1024": {
+        "vram_mb": 1438.0,
+        "time_ms": 40.07,
+        "tok_per_s": 25554.6
+      },
+      "4096": {
+        "vram_mb": 2828.1,
+        "time_ms": 205.16,
+        "tok_per_s": 19964.7
+      },
+      "16384": {
+        "vram_mb": 24195.6,
+        "time_ms": 148108.59,
+        "tok_per_s": 110.6
+      },
+      "65536": {
+        "oom": true
+      }
+    },
+    "oom_at": 65536,
+    "projected_vram_mb": {
+      "128000": 91045587.2,
+      "1000000": 5556981638.1,
+      "10000000": 555698163807.4
+    },
+    "projection": "quadratic_O(N^2)",
+    "done": true
+  }
+}

@@ -1,0 +1,13 @@
+{
+ "K": 4096,
+ "cos_logits": 0.999943,
+ "ce_exact": 7.5614,
+ "ce_fast": 7.583,
+ "delta_ppl_pct": 2.2,
+ "speed_exact_W65536_tok_s": 16.61,
+ "speed_fast_tok_s": {
+  "65536": 52.821,
+  "262144": 26.975
+ },
+ "speedup_vs_exact_W65536": 0.0
+}

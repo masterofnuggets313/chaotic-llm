@@ -1,0 +1,29 @@
+{
+ "K": 256,
+ "Mcand": 512,
+ "cos": 0.993358,
+ "delta_ppl_pct": -29.7,
+ "results": {
+  "16384": {
+   "adc_ms": 76.3,
+   "adc_tok_s": 13.1,
+   "tf_ms": 11.4,
+   "tf_tok_s": 88.0,
+   "adc_over_tf": 0.15
+  },
+  "65536": {
+   "adc_ms": 82.2,
+   "adc_tok_s": 12.2,
+   "tf_ms": 10.7,
+   "tf_tok_s": 93.8,
+   "adc_over_tf": 0.13
+  },
+  "262144": {
+   "adc_ms": 109.1,
+   "adc_tok_s": 9.2,
+   "tf_ms": 21.4,
+   "tf_tok_s": 46.6,
+   "adc_over_tf": 0.2
+  }
+ }
+}

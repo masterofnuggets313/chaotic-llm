@@ -1,0 +1,159 @@
+"""Эксперимент 7: attention-style driver — замена topk-8+gather на softmax по всему W.
+
+Гипотеза: у TF селекция = один fused kernel (q@k.T -> softmax -> @v).
+У STS сейчас: GEMM + topk(8) + gather = 3 отдельных kernel = 76% времени.
+Если topk-8 заменить на softmax по ВСЕМУ W (как attention, но драйвер = softmax(sim/T) @ e_all),
+то:
+- селекция становится 1-2 fused-совместимых matmul (attention-подобная)
+- блоки по K=256 вместо FFN — меньше работы
+Проверяем: (1) PPL не падает при замене topk->softmax-all? (2) скорость vs TF.
+
+Запуск: cd phase01/exp_vq && C:/Python313/python.exe exp_attn_driver.py
+"""
+import os, sys, time, json, torch
+import torch.nn.functional as F
+import numpy as np
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+PHASE = os.path.join(HERE, "..")
+REPO = os.path.join(PHASE, "..")
+sys.path.insert(0, PHASE); sys.path.insert(0, HERE)
+from models_pc import build_pc_model
+from night_task5_fracode_forward import keys_at, forward_general, TAIL, TEMP
+import final_benchmark as fb
+
+RESULTS = os.path.join(REPO, "results")
+K = 256
+
+
+def attn_driver_decode(model, en, e_all, q0, Wc, k_eff, nq, K, T=TEMP):
+    """Драйвер = softmax(sim/T) @ e_all по всем W (attention-стиль), блоки по K."""
+    q = q0
+    h_last = e_all[-1:].clone()
+    hK = e_all[-K:].clone()
+    for blk in model.blocks:
+        k = k_eff
+        qn = q / (q.norm() + 1e-6)          # (1,d)
+        sim = en @ qn.squeeze(0)            # (Wc,) GEMM
+        sim[Wc - TAIL:] = -1e18             # маска хвоста
+        w = torch.softmax(sim / T, 0)       # softmax по ВСЕМУ W
+        driver = (w.unsqueeze(-1) * e_all).sum(0, keepdim=True)   # (1,d) fused-совместимо
+        h_last = blk(h_last, driver, k)
+        hK = blk(hK, driver, k)
+        q = q0 + model.query_proj(h_last) * 0.5
+    g = hK.mean(0, keepdim=True)
+    return model.readout3(torch.cat([h_last, q0, g], dim=-1))
+
+
+def timeit(fn, warmup=3, iters=5):
+    for _ in range(warmup):
+        fn()
+    torch.cuda.synchronize()
+    t0 = time.time()
+    for _ in range(iters):
+        fn()
+    torch.cuda.synchronize()
+    return (time.time() - t0) / iters
+
+
+def main():
+    dev = "cuda"
+    print("Loading model...", flush=True)
+    head = fb.load_chars(os.path.join(PHASE, "corpus_train.txt"), 990_000)
+    tok = fb.make_bpe(head); V = tok.get_vocab_size()
+    n_head = len(tok.encode(head).ids)
+    ids = np.array(tok.encode(fb.load_chars(os.path.join(PHASE, "corpus5m_train.txt"), None)).ids, dtype=np.int64)
+    toks = torch.tensor(ids[n_head:], dtype=torch.long, device=dev)
+
+    model = build_pc_model("pc", vocab=V, d=192, layers=8, k_init=1.2,
+                           sync_steps=8, driver_mode="sts_prog", alpha=0.3, temp=TEMP).to(dev).eval()
+    model.load_state_dict(torch.load(os.path.join(RESULTS, "ckpts", "sts_prog_seed0.pt"), map_location="cpu"))
+    for p in model.parameters(): p.requires_grad_(False)
+    k_eff = torch.sigmoid(model.k); topk = int(model.topk); nq = int(model.nquery)
+    mode = "cyclic"
+
+    # --- 1. Качество attention-driver при разных температурах ---
+    Wq = 65536
+    print(f"Качество attention-driver (K={K}) на 8 окнах W={Wq}, поиск T...", flush=True)
+    cex_all = []
+    # собираем exact CE
+    with torch.no_grad():
+        for wi in range(8):
+            oo = 5000 + wi * Wq
+            if oo + Wq >= len(toks) - 1: break
+            end = oo + Wq
+            x = toks[oo:end]; target = toks[end].view(1)
+            lg = forward_general(model, x, mode, chunk=Wq)
+            cex_all.append(float(F.cross_entropy(lg, target).item()))
+    ce_ref = float(np.mean(cex_all))
+
+    temps = [0.05, 0.1, 0.3, 1.0, 3.0]
+    for T in temps:
+        ce = []
+        with torch.no_grad():
+            for wi in range(8):
+                oo = 5000 + wi * Wq
+                if oo + Wq >= len(toks) - 1: break
+                end = oo + Wq
+                x = toks[oo:end]; target = toks[end].view(1)
+                e_all = keys_at(model, x, torch.arange(Wq, device=dev), mode).detach()
+                en = e_all / (e_all.norm(dim=-1, keepdim=True) + 1e-6)
+                q0 = e_all[-nq:].mean(0, keepdim=True)
+                lg = attn_driver_decode(model, en, e_all, q0, Wq, k_eff, nq, K, T=T)
+                ce.append(float(F.cross_entropy(lg, target).item()))
+        ce_m = float(np.mean(ce))
+        dppl = (np.exp(ce_m) / np.exp(ce_ref) - 1) * 100
+        print(f"T={T:>5}: CE={ce_m:.4f}  ΔPPL={dppl:+.1f}%  (ref CE={ce_ref:.4f})")
+
+    # --- 2. Скорость лучшего T vs TF ---
+    from exp_decode_vs_transformer import TransformerKV
+    from parametric_models import TransformerLM
+    from match_transformer import pick_tf_dims
+
+    MAX_W = 262144
+    D_tf = pick_tf_dims(900_000, V, 512, layers=8, heads=4)
+    D_tf = max(4, (D_tf // 4) * 4)
+    tf = TransformerLM(V, 512, D=D_tf, HEADS=4, LAYERS=8).to(dev).eval()
+    n_pos = tf.pos.numel()
+    tf.pos = torch.nn.Parameter(torch.zeros(1, MAX_W, D_tf, device=dev)); tf.pos.requires_grad_(False)
+    for p in tf.parameters(): p.requires_grad_(False)
+    tfkv = TransformerKV(tf)
+
+    # выбираем лучшую T (минимум ΔPPL из измеренных)
+    best_T = min(temps, key=lambda t: abs(t))  # placeholder; ниже пересчитаем
+    T_use = 0.3
+    print(f"\nЗамер скорости (attn-driver T={T_use}, K={K} vs TF KV):", flush=True)
+    o = 5000
+    results = {}
+    for Wc in [16384, 65536, 262144]:
+        x = toks[o:o + Wc]
+        e_all = keys_at(model, x, torch.arange(Wc, device=dev), mode).detach()
+        en = e_all / (e_all.norm(dim=-1, keepdim=True) + 1e-6)
+        q0 = e_all[-nq:].mean(0, keepdim=True)
+        t_sts = timeit(lambda: attn_driver_decode(model, en, e_all, q0, Wc, k_eff, nq, K, T=T_use),
+                       warmup=2, iters=5)
+        sts_tps = 1 / t_sts
+
+        k_cache = [torch.randn(1, tfkv.nhead, Wc - 1, tfkv.hd, device=dev) for _ in range(8)]
+        v_cache = [torch.randn(1, tfkv.nhead, Wc - 1, tfkv.hd, device=dev) for _ in range(8)]
+        lengths = [Wc - 1] * 8
+        t_tf = timeit(lambda: tfkv.decode_one(x[Wc - 1].view(1), k_cache, v_cache, Wc - 1, lengths),
+                      warmup=2, iters=5)
+        tf_tps = 1 / t_tf
+
+        print(f"W={Wc:>7}: STS {t_sts*1000:6.1f} ms / {sts_tps:6.2f} tok/s | "
+              f"TF {t_tf*1000:6.1f} ms / {tf_tps:6.2f} tok/s | "
+              f"STS/TF = {sts_tps/tf_tps:.2f}x")
+        results[Wc] = {"sts_ms": round(t_sts * 1000, 1), "sts_tok_s": round(sts_tps, 1),
+                       "tf_ms": round(t_tf * 1000, 1), "tf_tok_s": round(tf_tps, 1),
+                       "sts_over_tf": round(sts_tps / tf_tps, 2)}
+
+    out = {"K": K, "T": T_use, "ce_ref": round(ce_ref, 4), "temps": temps,
+           "results": results}
+    with open(os.path.join(RESULTS, "exp_attn_driver.json"), "w", encoding="utf-8") as f:
+        json.dump(out, f, indent=1)
+    print(f"\nSaved: results/exp_attn_driver.json")
+
+
+if __name__ == "__main__":
+    main()

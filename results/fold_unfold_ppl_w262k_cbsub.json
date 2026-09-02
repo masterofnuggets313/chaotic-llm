@@ -1,0 +1,79 @@
+{
+ "script": "fold_unfold_ppl.py",
+ "design": "exact(e+h,F32) | keys-T5(\u043a\u043e\u0434\u044b+h F32) | gen(\u0442\u043e\u043b\u044c\u043a\u043e \u043a\u043e\u0434\u044b, h \u0440\u0430\u0437\u0432\u043e\u0440\u0430\u0447\u0438\u0432\u0430\u0435\u0442\u0441\u044f); held-out \u043a\u043e\u0434\u0431\u0443\u043a 75/25; \u043f\u0430\u0440\u043d\u0430\u044f \u0434\u0435\u0433\u0440\u0430\u0434\u0430\u0446\u0438\u044f PPL",
+ "chunk": 4096,
+ "K": 256,
+ "m_cand": 1024,
+ "runs": [
+  {
+   "W": 262144,
+   "nwin": 16,
+   "pos_mode": "cyclic",
+   "ppl_exact": 536.5547537818201,
+   "loss_exact": 6.285168614238501,
+   "exact_sec": 14.1420259475708,
+   "configs": [
+    {
+     "cfg": "FR-8x",
+     "variant": "keys-T5 (\u043a\u043e\u0434\u044b+h F32)",
+     "stored_bytes_per_tok": 864,
+     "ratio_x": 0.89,
+     "ppl": 849.1163632726725,
+     "loss": 6.744196236133575,
+     "delta_ppl_pct": 58.25,
+     "sec": 20.6
+    },
+    {
+     "cfg": "FR-8x",
+     "variant": "gen (\u0442\u043e\u043b\u044c\u043a\u043e \u043a\u043e\u0434\u044b, h=0\u0411)",
+     "stored_bytes_per_tok": 96,
+     "ratio_x": 8.0,
+     "ppl": 804.5492305677212,
+     "loss": 6.6902821585536,
+     "delta_ppl_pct": 49.95,
+     "sec": 17.7
+    },
+    {
+     "cfg": "FR-16x",
+     "variant": "keys-T5 (\u043a\u043e\u0434\u044b+h F32)",
+     "stored_bytes_per_tok": 816,
+     "ratio_x": 0.94,
+     "ppl": 930.3631275317593,
+     "loss": 6.835574969649315,
+     "delta_ppl_pct": 73.4,
+     "sec": 12.6
+    },
+    {
+     "cfg": "FR-16x",
+     "variant": "gen (\u0442\u043e\u043b\u044c\u043a\u043e \u043a\u043e\u0434\u044b, h=0\u0411)",
+     "stored_bytes_per_tok": 48,
+     "ratio_x": 16.0,
+     "ppl": 770.3207575204959,
+     "loss": 6.646806996315718,
+     "delta_ppl_pct": 43.57,
+     "sec": 10.0
+    },
+    {
+     "cfg": "FR-32x",
+     "variant": "keys-T5 (\u043a\u043e\u0434\u044b+h F32)",
+     "stored_bytes_per_tok": 792,
+     "ratio_x": 0.97,
+     "ppl": 522.5747350291381,
+     "loss": 6.258768007159233,
+     "delta_ppl_pct": -2.61,
+     "sec": 8.4
+    },
+    {
+     "cfg": "FR-32x",
+     "variant": "gen (\u0442\u043e\u043b\u044c\u043a\u043e \u043a\u043e\u0434\u044b, h=0\u0411)",
+     "stored_bytes_per_tok": 24,
+     "ratio_x": 32.0,
+     "ppl": 663.3019828327646,
+     "loss": 6.497230365872383,
+     "delta_ppl_pct": 23.62,
+     "sec": 6.0
+    }
+   ]
+  }
+ ]
+}

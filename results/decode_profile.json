@@ -1,0 +1,9 @@
+{
+ "W": 262144,
+ "full_ms": 256.65,
+ "tok_s": 3.896,
+ "keys_ms": 7.24,
+ "drivers_ms": 72.56,
+ "blocks_ms": 213.91,
+ "overhead_ms": -37.06
+}

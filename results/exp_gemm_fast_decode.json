@@ -1,0 +1,28 @@
+{
+ "K": 256,
+ "cos": 0.999799,
+ "delta_ppl_pct": -0.6,
+ "results": {
+  "16384": {
+   "sts_ms": 19.1,
+   "sts_tok_s": 52.4,
+   "tf_ms": 11.6,
+   "tf_tok_s": 86.0,
+   "sts_over_tf": 0.61
+  },
+  "65536": {
+   "sts_ms": 21.7,
+   "sts_tok_s": 46.1,
+   "tf_ms": 11.9,
+   "tf_tok_s": 84.0,
+   "sts_over_tf": 0.55
+  },
+  "262144": {
+   "sts_ms": 41.4,
+   "sts_tok_s": 24.1,
+   "tf_ms": 25.2,
+   "tf_tok_s": 39.7,
+   "sts_over_tf": 0.61
+  }
+ }
+}

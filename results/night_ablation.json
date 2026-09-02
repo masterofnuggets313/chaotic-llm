@@ -1,0 +1,106 @@
+{
+  "STS-Prog": {
+    "sts_prog_seed0": {
+      "seed": 0,
+      "ppl": {
+        "none": 23.939,
+        "order3": 16.616,
+        "uniform": 428.006,
+        "frozen": 17.653
+      },
+      "time_s": 2.0
+    },
+    "sts_prog_seed1": {
+      "seed": 1,
+      "ppl": {
+        "none": 23.847,
+        "order3": 16.727,
+        "uniform": 428.787,
+        "frozen": 17.652
+      },
+      "time_s": 1.6
+    },
+    "sts_prog_seed2": {
+      "seed": 2,
+      "ppl": {
+        "none": 25.285,
+        "order3": 17.378,
+        "uniform": 426.834,
+        "frozen": 18.352
+      },
+      "time_s": 1.5
+    },
+    "sts_prog_seed3": {
+      "seed": 3,
+      "ppl": {
+        "none": 24.587,
+        "order3": 17.019,
+        "uniform": 428.236,
+        "frozen": 18.003
+      },
+      "time_s": 1.4
+    },
+    "sts_prog_seed4": {
+      "seed": 4,
+      "ppl": {
+        "none": 24.365,
+        "order3": 16.741,
+        "uniform": 429.461,
+        "frozen": 17.834
+      },
+      "time_s": 1.4
+    }
+  },
+  "STS-Prog (no-PC)": {
+    "sts_prog__no_pc__seed0": {
+      "seed": 0,
+      "ppl": {
+        "none": 45.963,
+        "order3": 29.415,
+        "uniform": 458.025,
+        "frozen": 33.523
+      },
+      "time_s": 1.1
+    },
+    "sts_prog__no_pc__seed1": {
+      "seed": 1,
+      "ppl": {
+        "none": 45.682,
+        "order3": 29.253,
+        "uniform": 459.351,
+        "frozen": 33.338
+      },
+      "time_s": 1.1
+    },
+    "sts_prog__no_pc__seed2": {
+      "seed": 2,
+      "ppl": {
+        "none": 48.162,
+        "order3": 30.509,
+        "uniform": 458.96,
+        "frozen": 34.835
+      },
+      "time_s": 1.5
+    },
+    "sts_prog__no_pc__seed3": {
+      "seed": 3,
+      "ppl": {
+        "none": 47.364,
+        "order3": 29.944,
+        "uniform": 459.656,
+        "frozen": 34.428
+      },
+      "time_s": 1.1
+    },
+    "sts_prog__no_pc__seed4": {
+      "seed": 4,
+      "ppl": {
+        "none": 47.243,
+        "order3": 29.799,
+        "uniform": 459.928,
+        "frozen": 34.259
+      },
+      "time_s": 1.1
+    }
+  }
+}
