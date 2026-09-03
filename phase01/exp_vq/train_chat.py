@@ -83,7 +83,7 @@ def main():
     print(f"train: {len(train_ids):,} test: {len(test_ids):,}", flush=True)
 
     model = PurePCLM(V, d=D_MODEL, layers=LAYERS, k_init=K_INIT, alpha=ALPHA,
-                     sync_steps=SYNC_STEPS, driver_mode="sts_prog").to("cuda")
+                     sync_steps=SYNC_STEPS, driver_mode="sts_prog", W=W).to("cuda")
     nparam = sum(p.numel() for p in model.parameters())
     print(f"model: {nparam:,} params", flush=True)
 
@@ -151,7 +151,7 @@ def main():
 
         if step % 2000 == 0 or step == 1:
             print(f"  [{step}/{STEPS}] loss={loss.item():.3f} main={main_loss.item():.3f} aux={aux_loss.item():.3f} ({time.time()-t0:.0f}s)", flush=True)
-            torch.save(model.state_dict(), os.path.join(HERE, f"chat_ckpt_{step}.pt"))
+            torch.save(model.state_dict(), CKPT_PATH.replace(".pt", f"_step{step}.pt"))
 
     print(f"Training done in {time.time()-t0:.0f}s", flush=True)
 
@@ -172,7 +172,7 @@ def main():
         total_tok += 1
     ppl = math.exp(total_nll / total_tok)
     print(f"[chat] mixer_ppl={ppl:.3f} params={nparam:,} time={time.time()-t0:.0f}s", flush=True)
-    torch.save(model.state_dict(), os.path.join(HERE, "model_chat.pt"))
+    torch.save(model.state_dict(), CKPT_PATH)
     with open(os.path.join(HERE, "results_chat.json"), "w") as f:
         json.dump({"mixer_ppl": ppl, "params": nparam, "time": time.time()-t0}, f)
     print("saved model_chat.pt + results_chat.json", flush=True)
@@ -184,7 +184,16 @@ if __name__ == "__main__":
     ap.add_argument("--steps", type=int, default=STEPS)
     ap.add_argument("--batch", type=int, default=BATCH)
     ap.add_argument("--data", default="ru_chat.json", help="файл датасета в phase01/exp_vq/")
+    ap.add_argument("--lr", type=float, default=LR)
+    ap.add_argument("--warmup", type=int, default=WARMUP)
+    ap.add_argument("--window", type=int, default=W, help="длина окна контекста W")
+    ap.add_argument("--ckpt", default=os.path.join(HERE, "model_chat.pt"), help="куда сохранить чекпоинт")
+    ap.add_argument("--log", default="", help="файл лога (опционально)")
     args = ap.parse_args()
     D_MODEL, LAYERS, STEPS, BATCH = args.d, args.layers, args.steps, args.batch
+    LR, WARMUP = args.lr, args.warmup
+    W = args.window  # переопределяем глобальное окно до main()
     DATA_FILE = args.data
+    CKPT_PATH = args.ckpt
+    LOG_PATH = args.log
     main()

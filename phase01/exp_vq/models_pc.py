@@ -42,7 +42,8 @@ class PurePCBlock(nn.Module):
 
 class PurePCLM(nn.Module):
     def __init__(self, vocab=512, d=128, layers=4, k_init=1.2, alpha=0.3,
-                 sync_steps=1, driver_mode="mean", temp=0.3, primes=(3, 5, 7, 11)):
+                 sync_steps=1, driver_mode="mean", temp=0.3, primes=(3, 5, 7, 11),
+                 W=256):
         super().__init__()
         self.d = d
         self.layers = layers
@@ -51,6 +52,7 @@ class PurePCLM(nn.Module):
         self.temp = temp
         self.alpha = alpha
         self.primes = list(primes)
+        self.W = W
         self.embed = nn.Embedding(vocab, d)
         self.pos = nn.Parameter(torch.randn(1, W, d) * 0.02)
         self.blocks = nn.ModuleList([PurePCBlock(d, alpha=alpha) for _ in range(layers)])
