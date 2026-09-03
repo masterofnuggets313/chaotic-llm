@@ -53,8 +53,9 @@ def build_dataset(rows):
 def main():
     torch.manual_seed(0)
     np.random.seed(0)
-    print("Loading ru_chat.json...", flush=True)
-    with open(os.path.join(HERE, "ru_chat.json"), encoding="utf-8") as f:
+    data_path = os.path.join(HERE, DATA_FILE)
+    print(f"Loading {data_path}...", flush=True)
+    with open(data_path, encoding="utf-8") as f:
         rows = json.load(f)
     print(f"rows: {len(rows)}", flush=True)
 
@@ -182,6 +183,8 @@ if __name__ == "__main__":
     ap.add_argument("--layers", type=int, default=LAYERS)
     ap.add_argument("--steps", type=int, default=STEPS)
     ap.add_argument("--batch", type=int, default=BATCH)
+    ap.add_argument("--data", default="ru_chat.json", help="файл датасета в phase01/exp_vq/")
     args = ap.parse_args()
     D_MODEL, LAYERS, STEPS, BATCH = args.d, args.layers, args.steps, args.batch
+    DATA_FILE = args.data
     main()
