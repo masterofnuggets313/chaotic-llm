@@ -1,0 +1,28 @@
+{
+  "sts_prog": {
+    "ppl": 24.841,
+    "retrieval": {
+      "16": 0.465,
+      "64": 0.495,
+      "256": 0.34
+    },
+    "params": 900353
+  },
+  "nano_gpt_ref": {
+    "ppl": 153.505,
+    "retrieval": {
+      "16": 0.175,
+      "64": 0.18,
+      "256": 0.11
+    },
+    "params": 14491392
+  },
+  "meta": {
+    "corpus": "corpus_public.txt (TheAlgorithms, публичный)",
+    "protocol": "BPE-512, split 80/20, W=256, both eval last-token PPL",
+    "nanoGPT_config": "n_embd=384, n_layer=8, n_head=8, vocab=512 (karpathy code as-is)",
+    "nanoGPT_steps": 6000,
+    "STS_steps": 6000,
+    "note": "nanoGPT 16x params; trained in native all-positions mode"
+  }
+}
