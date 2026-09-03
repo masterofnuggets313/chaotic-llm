@@ -11,7 +11,8 @@ import torch, torch.nn as nn
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "exp_vq"))
 from parametric_models import TransformerLM, count_params
-from exp_vq.final_benchmark import build_data, build_order3, eval_ppl, eval_retrieval, W
+from exp_vq import final_benchmark as fb
+from exp_vq.final_benchmark import build_order3, eval_ppl, eval_retrieval, W
 from exp_vq.models_pc import build_pc_model
 from exp_vq.match_transformer import pick_tf_dims
 
@@ -96,11 +97,23 @@ def train_last_token(model, train_ids, seed=0, steps=STEPS, batch=BATCH, lr=LR):
 
 
 def main():
-    print("Loading data...", flush=True)
-    tok, V, train_ids = build_data()
-    n = len(train_ids)
-    tr_ids = train_ids[:n - n // 20]
-    te_ids = train_ids[n - n // 20:]
+    print("Loading public corpus (corpus_public.txt, как final_benchmark_v2)...", flush=True)
+    ROOT = os.path.abspath(os.path.join(HERE, ".."))
+    corpus_path = os.path.join(ROOT, "phase01", "corpus_public.txt")
+    if not os.path.exists(corpus_path):
+        # fallback: ищем рядом
+        for cand in [os.path.join(HERE, "..", "corpus_public.txt"), corpus_path]:
+            if os.path.exists(cand):
+                corpus_path = cand
+                break
+    print(f"corpus={corpus_path}", flush=True)
+    train_text = fb.load_chars(corpus_path, fb.MAX_TRAIN)
+    tok = fb.make_bpe(train_text)
+    V = tok.get_vocab_size()
+    train_ids = np.array(tok.encode(train_text).ids, dtype=np.int32)
+    idx = int(len(train_ids) * 0.8)  # split как в v2
+    tr_ids = train_ids[:idx]
+    te_ids = train_ids[idx:]
     print(f"train={len(tr_ids):,} test={len(te_ids):,} V={V}", flush=True)
 
     # STS-Prog эталон (как в final_benchmark: d=192, layers=8)
