@@ -1,0 +1,53 @@
+{
+  "sts_prog": {
+    "test_ppl": 38.191,
+    "retrieval": {
+      "16": 0.45,
+      "64": 0.375,
+      "256": 0.34
+    },
+    "val_ppl": 26.206,
+    "best_step": -1,
+    "params": 900353
+  },
+  "tf_last": {
+    "test_ppl": 59.315,
+    "retrieval": {
+      "16": 0.155,
+      "64": 0.185,
+      "256": 0.14
+    },
+    "val_ppl": 41.402,
+    "best_step": -1,
+    "params": 489616
+  },
+  "nanoGPT_all": {
+    "test_ppl": 31.97,
+    "retrieval": {
+      "16": 0.255,
+      "64": 0.17,
+      "256": 0.145
+    },
+    "val_ppl": 22.143,
+    "best_step": 1500,
+    "params": 891648
+  },
+  "nanoGPT_last": {
+    "test_ppl": 40.562,
+    "retrieval": {
+      "16": 0.31,
+      "64": 0.185,
+      "256": 0.135
+    },
+    "val_ppl": 29.252,
+    "best_step": 6000,
+    "params": 891648
+  },
+  "meta": {
+    "protocol": "FAIR v2: train90/val10/test; cosine 5e-4->5e-5; warmup 1000; clip 1.0; best-val ckpt для ВСЕХ",
+    "nanoGPT_recipe": "dropout=0.1; wd=0.1 на ndim>=2, 0 на biases/norms (karpathy grouping); оба режима обучения",
+    "STS_TF_recipe": "wd=0.01 uniform (как в бенчмарке репо)",
+    "corpus": "corpus_public.txt, BPE-512, W=256, 6000 шагов, seed 0",
+    "note": "Ответ на критику: nanoGPT с полным родным рецептом; отбор best-val симметричен; last-token PPL у всех одинаковый"
+  }
+}
