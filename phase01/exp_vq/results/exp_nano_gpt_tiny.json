@@ -1,0 +1,26 @@
+{
+  "sts_prog": {
+    "ppl": 24.841,
+    "retrieval": {
+      "16": 0.465,
+      "64": 0.495,
+      "256": 0.34
+    },
+    "params": 900353
+  },
+  "nano_gpt_tiny": {
+    "ppl": 210.822,
+    "retrieval": {
+      "16": 0.145,
+      "64": 0.145,
+      "256": 0.055
+    },
+    "params": 891648
+  },
+  "meta": {
+    "corpus": "corpus_public.txt (TheAlgorithms, публичный)",
+    "protocol": "BPE-512, split 80/20, W=256, eval last-token PPL, 6000 steps both",
+    "nanoGPT_tiny_config": "karpathy model.py as-is, n_embd=128, n_layer=4, n_head=4 (equal budget ~957K)",
+    "note": "equal-budget fight: karpathy code, native all-positions training"
+  }
+}
