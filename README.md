@@ -1,6 +1,6 @@
 # ChaoticLLM → STS-Prog: история поиска альтернативы attention
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-red)](https://pytorch.org/)
 [![CI](https://github.com/masterofnuggets313/chaotic-llm/actions/workflows/smoke.yml/badge.svg)](https://github.com/masterofnuggets313/chaotic-llm/actions/workflows/smoke.yml)
@@ -311,7 +311,7 @@ kernel, у STS селекция = несколько kernel-запусков (н
 chaotic-llm/
 ├── README.md / README.html              ← этот файл / переключатель языка (RU⇄EN)
 ├── CITATION.cff                         ← академическое цитирование
-├── LICENSE                              ← MIT
+├── LICENSE                              ← GPL-3.0
 ├── .github/workflows/smoke.yml          ← CI: smoke-тесты на каждый push
 ├── .gitignore
 │
