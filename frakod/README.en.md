@@ -117,9 +117,14 @@ defects, not by the physics of compression (see below).
    same sliding average, and `RAD` is read from `meta.json`.
 3. **Two different embedders in one process.** `recall` (archive) ran on
    `sts_prog_seed0.pt` (d=192, vocab=512), while `dvec` (`/resolve`, operational
-   memory) ran on `ckpt_v7_night_50k.pt` (d=256, vocab=8192).    **Partially fixed:**
-   `_sts_embed_table()` now picks the checkpoint from `meta.embed_ckpt`, while
-   `dvec` is still on v7 — they remain to be unified.
+   memory) ran on `ckpt_v7_night_50k.pt` (d=256, vocab=8192).    **Fixed:**
+   `_sts_embed_table()` takes the checkpoint from `meta.embed_ckpt`, and
+   `load_embedder()` (which serves `dvec`, `/stats`, `/window`) now also reads
+   both the table and the tokenizer from `meta.json` — the table is pulled
+   straight from the checkpoint, no model built. `vocab`/`d` are checked against
+   the archive, with a clear error on mismatch. Verified: v7 archive →
+   `(8192, 256)` + `tok_v31`, v8 archive → `(8192, 192)` + `tok_v8`. The
+   `/resolve` and `/recall` vector spaces now coincide.
 4. **`embed_ckpt` was written as a basename, not a path.** The builder put only
    the file name into `meta.json`, so if the checkpoint did not sit next to
    `frakod_api.py` (e.g. `phase01/exp_vq/ckpt_v8_voc8k.pt`), the API **silently
@@ -198,15 +203,11 @@ the package.
 
 ## What to do next
 
-1. **Unify the two embedders.** `recall` already takes its checkpoint from
-   `meta.embed_ckpt`, but `dvec` (`/resolve`) is still hard-wired to v7 (d=256,
-   vocab=8192). While they differ, `/resolve` and `/recall` live in different
-   vector spaces.
-2. **Lift snippet mode.** The vector gives 0.60 on a full question but 0.00–0.17
+1. **Lift snippet mode.** The vector gives 0.60 on a full question but 0.00–0.17
    on a 160-char snippet. The cause is the context average blurring a short query.
    Options: build the query as an average over several anchor windows, or move to
    a multi-level key (not one averaged vector per position).
-3. **Pre-train the d=192 embedder with a LARGE vocabulary — overnight. The
+2. **Pre-train the d=192 embedder with a LARGE vocabulary — overnight. The
    pipeline is ready.** The pair (d=192, vocab=8192) is **already implemented**:
    `phase01/exp_vq/train_v8_uplift.py` builds a mixed corpus (code + real
    history), trains PurePCLM d=192 l=8 and saves `ckpt_v8_voc8k.pt` +
@@ -234,12 +235,12 @@ the package.
 
    ppl guide (v7 fell to 454 within the first 500 steps and to 40 by 60k): at
    least 8000 steps are needed for the vector to have a chance.
-4. **Drop the `keys_f16` dependency.** ADC alone gives 0.30 versus 0.60 with
+3. **Drop the `keys_f16` dependency.** ADC alone gives 0.30 versus 0.60 with
    rerank — the gap is still wide, but better codebook training can close it, and
    then the permanent footprint falls from 548 to ~36 B/token.
-5. **Replace the linear scan.** `_recall_cpu` walks all N tokens (~640 ms). An
+4. **Replace the linear scan.** `_recall_cpu` walks all N tokens (~640 ms). An
    ANN/HNSW over code prefixes is needed.
-6. **Decide the distribution model.** Currently GPL-3.0. Settle this before
+5. **Decide the distribution model.** Currently GPL-3.0. Settle this before
    external PRs.
 
 ## Why it is still cool

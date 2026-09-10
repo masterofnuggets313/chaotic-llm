@@ -65,23 +65,62 @@ def _dir_accounting(idx_dir):
 
 import numpy as np, torch, torch.nn.functional as F
 from tokenizers import Tokenizer
-from models_pc_v4 import PCSTSLMv4
 
 _tok = None; _EM = None; _MU = None
 def load_embedder():
+    """Эмбеддер и токенизатор для оперативной памяти — ПО АРХИВУ, не хардкод.
+
+    Раньше жёстко грузились tok_v31.json + ckpt_v7_night_50k.pt. Если архив
+    построен другой парой (v8: tok_v8 + d=192), dvec строил вектор из чужой
+    таблицы и чужим токенизатором — ровно тот же класс ошибки, что чинился в
+    _sts_embed_table. Теперь берём из meta.json (абсолютный путь), а если там
+    пусто — откатываемся на исторический v7, чтобы не сломать старые индексы.
+    """
     global _tok, _EM, _MU
     if _tok is not None: return
     t0 = time.time()
-    _tok = Tokenizer.from_file(os.path.join(HERE, 'tok_v31.json'))
-    ck = torch.load(os.path.join(HERE, 'ckpt_v7_night_50k.pt'), map_location='cpu', weights_only=False)
-    cfg = ck['cfg']
-    v7 = PCSTSLMv4(vocab=_tok.get_vocab_size(), d=cfg['d'], layers=cfg['layers'],
-                   window=cfg['window'], num_heads=cfg['heads'], topk=cfg['topk'],
-                   num_slots=cfg['slots'])
-    v7.load_state_dict(ck['model'], strict=False)
-    _EM = v7.embed.weight.detach(); _MU = _EM.mean(0)
-    del v7
-    print(f'[frk1] эмбеддер v7 (таблица) за {time.time()-t0:.1f}с', flush=True)
+    m = _arch_meta()
+
+    # --- токенизатор: из meta.json, иначе исторический tok_v31.json ---
+    tf = _first_existing(
+        os.environ.get('FRK_TOK'),
+        m.get('tokenizer_path'),
+        os.path.join(HERE, m['tokenizer']) if m.get('tokenizer') else None,
+        os.path.join(HERE, 'tok_v31.json'),
+    )
+    _tok = Tokenizer.from_file(tf)
+
+    # --- таблица эмбеддингов: прямо из чекпойнта (без сборки модели) ---
+    _ec = m.get('embed_ckpt')
+    _ec_name = m.get('embed_ckpt_name') or (os.path.basename(_ec) if _ec else None)
+    ckpt = _first_existing(
+        os.environ.get('FRK_STS_CKPT'),
+        _ec,
+        os.path.join(HERE, _ec) if _ec else None,
+        os.path.join(HERE, _ec_name) if _ec_name else None,
+        os.path.join(HERE, 'ckpt_v7_night_50k.pt'),
+    )
+    if ckpt is None:
+        raise FileNotFoundError(
+            'чекпойнт эмбеддера не найден: укажите FRK_STS_CKPT или положите '
+            'чекпойнт из meta.json рядом с frakod_api.py')
+    ck = torch.load(ckpt, map_location='cpu', weights_only=False)
+    sd = ck.get('model', ck) if isinstance(ck, dict) else ck
+    emb = sd['embed.weight'] if isinstance(sd, dict) and 'embed.weight' in sd else None
+    if emb is None:
+        raise KeyError(f'в {ckpt} нет embed.weight')
+    _EM = emb.detach().float()
+    _MU = _EM.mean(0)
+
+    # --- сверка с архивом: vocab и d обязаны совпасть ---
+    _v_arch, _d_arch = int(m.get('vocab') or 0), int(m.get('D') or 0)
+    if _v_arch and int(_EM.shape[0]) != _v_arch:
+        raise ValueError(f'эмбеддер vocab={_EM.shape[0]}, а архив требует {_v_arch}')
+    if _d_arch and int(_EM.shape[1]) != _d_arch:
+        raise ValueError(f'эмбеддер d={_EM.shape[1]}, а архив требует {_d_arch}')
+
+    print(f'[frk1] эмбеддер памяти: {os.path.basename(ckpt)} {tuple(_EM.shape)} '
+          f'+ {os.path.basename(tf)} за {time.time()-t0:.1f}с', flush=True)
 
 def dvec(text):
     ids = [t for t in _tok.encode(text, add_special_tokens=False).ids if t != 0]
