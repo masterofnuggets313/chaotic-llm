@@ -1,0 +1,8 @@
+# архивы и модели — не коммитим, каждый строит свой
+frakod_index*/
+*.npy
+*.db
+*.json
+!package.json
+__pycache__/
+*.log
