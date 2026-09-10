@@ -123,8 +123,10 @@ col = rc.create_collection('bench', metadata={'hnsw:space': 'cosine'})
 t0 = time.time()
 for i in range(0, len(msgs), 64):
     batch = msgs[i:i+64]
-    col.add(ids=[str(m['id']) for m in batch], embeddings=embed([m['text'][:2000] for m in batch]),
-            documents=[m['text'][:300] for m in batch])
+    # ОДИН И ТОТ ЖЕ текст идёт и в эмбеддинг, и в документ (было [:2000] vs [:300] —
+    # неравный стандарт внутри одной системы)
+    docs_ = [m['text'][:2000] for m in batch]
+    col.add(ids=[str(m['id']) for m in batch], embeddings=embed(docs_), documents=docs_)
 rag_write_s = time.time()-t0
 hits = 0; ptoks = []; sms = []
 for nd in needles:
@@ -178,22 +180,58 @@ except Exception as e:
     print('MEM0 FAILED (isolated):', str(e)[:120], flush=True)
 
 # ============ 4) FRACOD: архив через /recall + 0 LLM-токенов на запись ======
+# ЧЕСТНО: два протокола запроса, потому что они меряют разное.
+#   query   — только вопрос ("что я говорил про «X»?"), как у RAG/Mem0 -> сравнение 1:1
+#   snippet — 160-симв. фрагмент вокруг иглы: проверка, находит ли система
+#             фрагмент по его же тексту (у Fracod это задействует лекс-слой)
+# Плюс строки vector-only: что даёт САМ 24-байтовый код без реранка и лексики.
 print('=== FRACOD ===', flush=True)
-hits = 0; ptoks = []; sms = []
-for nd in needles:
+
+
+def fracod_query(qtext, mode='auto'):
+    body = json.dumps({'text': qtext[:300], 'k': 4, 'mode': mode}).encode()
+    req = urllib.request.Request(FRK + '/recall', data=body,
+                                 headers={'Content-Type': 'application/json'})
     t1 = time.time()
-    body = json.dumps({'text': nd['snippet'][:300], 'k': 4}).encode()
-    req = urllib.request.Request(FRK + '/recall', data=body, headers={'Content-Type': 'application/json'})
-    r = json.loads(urllib.request.urlopen(req, timeout=120).read())
-    sms.append((time.time()-t1)*1000)
-    docs = [s['text'] for s in r.get('results', [])]
-    txt, pe, ce = ollama_chat(answer_prompt(nd['query'], docs))
-    ptoks.append(pe); hits += nd['needle_word'].lower() in ' '.join(docs).lower()
+    r = json.loads(urllib.request.urlopen(req, timeout=180).read())
+    return r, (time.time() - t1) * 1000
+
+
+def fracod_eval(query_field, mode, label):
+    hits = 0; ptoks = []; sms = []
+    for nd in needles:
+        r, ms = fracod_query(nd[query_field], mode)
+        sms.append(ms)
+        docs = [s['text'] for s in r.get('results', [])]
+        txt, pe, ce = ollama_chat(answer_prompt(nd['query'], docs))
+        ptoks.append(pe); hits += nd['needle_word'].lower() in ' '.join(docs).lower()
+    out = {'recall': round(hits / len(needles), 3),
+           'prompt_tok_mean': round(statistics.mean(ptoks), 1),
+           'search_ms': round(statistics.median(sms), 1)}
+    print(f'fracod[{label}] {out}', flush=True)
+    return out
+
+
 st = json.load(open(os.path.join(HERE, 'frakod_index', 'meta.json'), encoding='utf-8'))
-results['fracod'] = {'recall': round(hits/len(needles), 3), 'prompt_tok_mean': round(statistics.mean(ptoks), 1),
-                     'search_ms': round(statistics.median(sms), 1), 'storage_mb': st['fr_mb'],
-                     'archive_tokens': st['N'], 'write_tokens_llm': 0}
-print('fracod', results['fracod'], flush=True)
+# честный вес хранилища: коды + keys(реранк) + ids(лекс), а не только коды
+_storage_files = ('codes.npy', 'keys_f16.npy', 'ids.npy')
+_store_mb = round(sum(os.path.getsize(os.path.join(HERE, 'frakod_index', f))
+                      for f in _storage_files
+                      if os.path.exists(os.path.join(HERE, 'frakod_index', f))) / 1024**2, 1)
+
+q_main = fracod_eval('query', 'auto', 'query·hybrid')
+results['fracod'] = {**q_main, 'storage_mb': _store_mb,
+                     'storage_mb_codes_only': st.get('codes_mb', st.get('fr_mb')),
+                     'archive_tokens': st['N'], 'write_tokens_llm': 0,
+                     'protocol': 'query (same as RAG/Mem0)'}
+# дополнительные строки-разрезы
+results['fracod_snippet_hybrid'] = {**fracod_eval('snippet', 'auto', 'snippet·hybrid'),
+                                    'protocol': 'snippet 160 chars (bench-memory style)'}
+results['fracod_query_vector24'] = {**fracod_eval('query', 'vector24', 'query·24B-only'),
+                                    'protocol': 'query, ADC over 24 B codes only, no keys/lex'}
+results['fracod_query_lex'] = {**fracod_eval('query', 'lex', 'query·lex-only'),
+                               'protocol': 'query, lexical layer only'}
+print('fracod storage_mb (codes+keys+ids) =', _store_mb, flush=True)
 
 json.dump(results, open(os.path.join(HERE, 'bench_results.json'), 'w', encoding='utf-8'),
           ensure_ascii=False, indent=1)

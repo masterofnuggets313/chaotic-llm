@@ -24,6 +24,9 @@ from models_pc import build_pc_model, W  # noqa: E402
 import benchmark  # noqa: E402
 
 
+from models_pc_v3 import PCSTSLMv3  # noqa: E402
+
+
 def tiny_model(driver="sts_prog", vocab=64, d=32, layers=2):
     torch.manual_seed(0)
     return build_pc_model("pc", vocab, d=d, alpha=0.3, k_init=1.2, sync_steps=1,
@@ -37,6 +40,15 @@ def test_forward_shape():
         out = m(x)
         assert out.shape == (2, 64), f"{driver}: форма выхода {tuple(out.shape)}"
         assert torch.isfinite(out).all(), f"{driver}: в логитах NaN/inf"
+
+
+def test_sts_v3_smoke():
+    m = PCSTSLMv3(vocab=64, d=32, layers=2, window=W, num_heads=4, topk=4)
+    x = torch.randint(0, 64, (2, W))
+    out = m(x)
+    assert out.shape == (2, 64)
+    assert torch.isfinite(out).all()
+
 
 
 def test_nopc_really_removes_chaos():

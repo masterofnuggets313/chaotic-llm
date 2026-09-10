@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""График бенча. Заголовок собирается из РЕАЛЬНЫХ чисел bench_results.json
+(раньше тут было захардкожено «313 questions» — этого числа в артефактах нет)."""
 import json
 import matplotlib
 matplotlib.use('Agg')
@@ -29,7 +31,14 @@ ax[2].grid(axis='y', alpha=0.25)
 for rect, v in zip(b, w):
     lbl = '0' if v < 1 else f'{v:,.0f}'
     ax[2].text(rect.get_x() + rect.get_width() / 2, v, lbl, ha='center', va='bottom', fontsize=9)
-fig.suptitle('One shared history (2.9M tokens, 313 questions) - four memory systems', fontsize=10, y=1.02)
+
+# заголовок — только из фактических данных
+_arch_tok = r.get('fracod', {}).get('archive_tokens')
+_title = 'One shared history'
+if _arch_tok:
+    _title += f' ({_arch_tok/1e6:.1f}M archive tokens)'
+_title += ' — four memory systems'
+fig.suptitle(_title, fontsize=10, y=1.02)
 plt.tight_layout()
 plt.savefig('bench_chart.png', bbox_inches='tight')
-print('saved')
+print('saved', _title)

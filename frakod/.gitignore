@@ -6,3 +6,16 @@ frakod_index*/
 !package.json
 __pycache__/
 *.log
+
+# выгрузки чужих диалогов и корпуса — НЕ публикуем (приватное)
+fx_*.json
+fx_*.txt
+fx.jsonl
+out_*.txt
+hermes_history*.txt
+deepseek_frk1_test.json
+*_needles*.json
+*_results*.json
+*.bak
+*.jsonl
+*.zst
