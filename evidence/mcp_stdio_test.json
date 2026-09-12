@@ -1,6 +1,6 @@
 {
  "positive": {
-  "server": "frakod",
+  "server": "fracode",
   "n_tools": 14,
   "tools": [
    "remember",
@@ -53,7 +53,7 @@
   }
  },
  "negative": {
-  "server": "frakod",
+  "server": "fracode",
   "n_tools": 14,
   "tools": [
    "remember",
