@@ -1,0 +1,25 @@
+{
+ "api_a": "http://127.0.0.1:8781",
+ "export": {
+  "ok": true,
+  "ms": 178,
+  "path": "G:/Migration/chaotic-llm/frakod/runs/transfer_test/pkg.frk1x.npz",
+  "bytes": 2096692,
+  "encoder_bundled": false,
+  "error": null
+ },
+ "import": {
+  "ok": true,
+  "ms": 143,
+  "dir": "G:\\Migration\\chaotic-llm\\frakod\\frakod_index_transfer_B",
+  "error": null
+ },
+ "b_dir": "G:\\Migration\\chaotic-llm\\frakod\\frakod_index_transfer_B",
+ "b_started": true,
+ "compare": {
+  "n_queries": 20,
+  "same_positions": "20/20",
+  "same_text": "20/20",
+  "a_nonempty_text": "20/20"
+ }
+}

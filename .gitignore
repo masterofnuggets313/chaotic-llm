@@ -1,0 +1,68 @@
+# Fracode MCP — что НЕ должно попадать в репозиторий.
+#
+# Причина появления: в рабочем каталоге 19 ГБ, из них 15 ГБ — кэш экспериментов
+# (runs/_idcache) и до 2 ГБ — производные индексы. Один `git add -A` превращает
+# репозиторий в помойку, которую никто не клонирует.
+#
+# ПРЕЖНЯЯ ВЕРСИЯ исключала все *.json — но именно в runs/*.json лежат файлы-источники
+# чисел из README (задержка, «нашёлся факт», перенос). Число без источника цитировать
+# нельзя, поэтому нужные json разрешены явно, а всё остальное по-прежнему закрыто.
+
+# --- тяжёлые производные артефакты ---
+# ВАЖНО: `runs/` (со слешом) закрыл бы каталог целиком, и тогда исключения вида
+# `!runs/latency_N7934.json` НЕ сработали бы — git не заходит в проигнорированный
+# каталог. Поэтому закрываем СОДЕРЖИМОЕ (runs/*), а нужные файлы открываем ниже.
+runs/*
+runs/_idcache/
+*.memmap
+*.f16.npy
+*.npy
+!runs/latency_N7934.json
+!runs/latency_N31595.json
+!runs/bench_fact_ctx0.json
+!runs/bench_fact_ctx1.json
+!runs/bench_fact_ctx2.json
+!runs/fact_paired_ctx1_vs_ctx0.json
+!runs/transfer_roundtrip.json
+!runs/mcp_stdio_test.json
+
+# --- собранные индексы: строятся локально, до 2 ГБ ---
+frakod_index
+frakod_index*/
+enc_cache/
+*.frk1x
+*.frk1x.npz
+
+# --- чекпойнты и веса ---
+*.pt
+*.pth
+*.safetensors
+
+# --- ЛИЧНЫЕ ДАННЫЕ: чужие переписки и логи, публиковать нельзя ---
+# Публикуемый бенчмарк строится на любом корпусе пользователя (make_bench.py),
+# поэтому эти файлы не нужны никому, кроме владельца машины.
+hermes_history*.txt
+hermes_sem_bench*.json
+corpus_dialog_train.txt
+corpus5m_train.txt
+corpus*_train.txt
+fx_*.json
+fx_*.txt
+fx.jsonl
+out_*.txt
+deepseek_frk1_test.json
+*_needles*.json
+*.jsonl
+*.zst
+*.bak
+*.db
+
+# --- логи и служебное ---
+*.log
+*.out
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+.DS_Store
+*_transfer_B/

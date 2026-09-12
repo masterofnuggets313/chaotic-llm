@@ -1,0 +1,13 @@
+# --- ядро памяти (нужно для API и MCP) ---
+fastapi>=0.110
+uvicorn>=0.29
+numpy>=1.26
+torch>=2.2
+tokenizers>=0.19
+mcp>=1.0            # FastMCP; импорт адаптирован под mcp>=1.10 (см. frakod_mcp.py)
+pydantic>=2.0
+
+# --- только для бенча (NONE/RAG/Mem0/Fracode) ---
+chromadb>=1.5
+mem0ai>=0.1.0       # нужен для строки Mem0; без него бенч упадёт в изоляции
+matplotlib>=3.8     # график make_bench_chart.py
