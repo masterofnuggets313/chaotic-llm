@@ -146,6 +146,12 @@ What changes (and why this is an honest model rather than a hack):
 | cost | 24 B/token | **20 B/window** (16 codes + 4 lexical) |
 | readable without the encoder | yes | **no** — the encoder is a dependency |
 
+20 B is only what **grows** with the archive (`b_per_unit_resident`). On top of
+it there is a fixed 2.0 MB codebook: it does not depend on N, so a small archive
+pays more per window — 86 B at 31,595 windows and 1154 B at 1,849. All three
+points are recorded in `evidence/storage.json`; quoting 20 B without this caveat
+is not allowed.
+
 **The archive does NOT store the corpus embedding table.** The temptation to put
 it alongside is strong (and I tested it): it would cost 4 KB/window instead of
 20 B and, worse, turn the archive into a leak — ready-made answers to its own
@@ -287,7 +293,10 @@ Artifact: `evidence/cross_encoder_NEGATIVE_2026-09-11.md`.
 ## Quick start
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt          # core: fastapi, uvicorn, numpy, torch,
+                                         # tokenizers, mcp, pydantic — that is all
+# the comparison bench (NONE/RAG/Mem0/Fracode) pulls half a gigabyte and the core
+# does not need it:/n# pip install -r requirements-bench.txt
 
 # 1) build the archive on an EXTERNAL encoder (recommended path — see
 #    "The encoder is the main bottleneck"): 20 B/window, an order of magnitude
@@ -319,9 +328,15 @@ itself is **1.1 and 3.0 ms** — the rest is the external encoder.
 
 **How much text `/recall` returns.** For a window archive, ±`FRK_WIN_CTX` windows
 around the hit are returned (default 1, i.e. 1,920 characters; truncation via
-`FRK_TXT_CAP`, default 2000). This is not cosmetic: with text truncated to 600
-characters the fact appeared in the output 44% of the time; with ±1 window it is
-**59%** (`evidence/bench_fact_ctx*.json`, gain +0.140, p = 3.7e-9, paired test).
+`FRK_TXT_CAP`, default 2000). This is not cosmetic: with a single window (`CTX=0`)
+the fact appeared in the output 45% of the time; with ±1 window it is **59%**
+(soft `snippet_hit`, k=8; `evidence/bench_fact_ctx*.json`, gain +0.140, paired
+McNemar 29/0, p = 3.7e-9; the search itself is identical 207/207).
+
+**Why a soft metric here, when the rule above says quote the strict one.** The
+strict `snippet_full` was added later and is absent from the `CTX=0` run, so the
+paired test has nothing to compute on. The strict end point is **0.5121** at k=8
+(95% CI 0.444–0.575). A strict-metric gain would need the run repeated.
 
 **Two versions of the "fact found" metric — quote the strict one.**
 
@@ -381,10 +396,17 @@ frakod_api.py  frakod_mcp.py  frakod_index_build.py   product: API, MCP, archive
 make_bench.py  make_demo_corpus.py                    bench for any corpus + demo data
 _bench_fact.py  _test_mcp_stdio.py  _test_transfer.py tests and benchmarks (runnable)
 _diag_fact_paired.py  _bench_latency.py               statistics and latency
+requirements.txt  requirements-bench.txt              core / heavy benchmark dependencies
+landing/index.html                                    landing page: one file, RU/EN, no external assets
 evidence/                                             source file for every number here
 docs/                                                 roadmap, audit, transfer protocol
 models_pc.py  train_extmem.py  frk1x.py               model and training (research track)
 ```
+
+The tree is assembled by `_make_publish_tree.py` — a white list plus the
+transitive closure of local imports. It also emits `evidence/storage.json`:
+archive metadata cannot be published (its `enc_probe` holds fragments of personal
+corpora), yet the 20 B claim has to point at something.
 
 **Why the files are `frakod_*` while the product is Fracode MCP.** The internal
 infrastructure (file names, `FRK_*` variables, the `frk1x` package format) grew

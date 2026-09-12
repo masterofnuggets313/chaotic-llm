@@ -1,0 +1,10 @@
+# Fracode MCP — ТОЛЬКО для сравнительного бенча (NONE / RAG / Mem0 / Fracode).
+# Ядру памяти это не нужно: для MCP-сервера достаточно requirements.txt.
+#
+#   pip install -r requirements.txt          <- память работает уже тут
+#   pip install -r requirements-bench.txt    <- только если нужны сравнения
+
+-r requirements.txt
+chromadb>=1.5
+mem0ai>=0.1.0       # нужен для строки Mem0; без него бенч упадёт в изоляции
+matplotlib>=3.8     # график make_bench_chart.py

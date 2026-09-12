@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fracode MCP — долговременная память для LLM-агентов</title>
+<meta name="description" content="Долговременная память для LLM-агентов вне контекста: 20 байт на окно, 1.1 мс поиск, перенос между агентами одним файлом. MCP-сервер, GPL-3.0.">
+<style>
+  :root{
+    --bg:#ffffff; --fg:#1c1c1a; --muted:#5f5e5a; --line:rgba(0,0,0,.12);
+    --card:#f7f6f2; --accent:#185fa5; --warn-bg:#faeeda; --code:#f1efe8;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16161a; --fg:#f0efe9; --muted:#a8a6a0; --line:rgba(255,255,255,.14);
+      --card:#1f1f24; --accent:#85b7eb; --warn-bg:#3a2c17; --code:#101014;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+       font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:880px;margin:0 auto;padding:48px 24px 72px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:32px}
+  .brand{font-size:14px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .lang{display:flex;gap:4px;border:1px solid var(--line);border-radius:8px;padding:3px}
+  .lang button{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;
+       padding:4px 10px;border-radius:6px;cursor:pointer}
+  .lang button.on{background:var(--card);color:var(--fg)}
+  h1{font-size:32px;line-height:1.25;font-weight:600;margin:0 0 16px;letter-spacing:-.01em}
+  .lede{font-size:18px;color:var(--muted);margin:0 0 40px;max-width:62ch}
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:0 0 8px}
+  .m{background:var(--card);border-radius:12px;padding:16px 18px}
+  .m .k{font-size:26px;font-weight:600;line-height:1.2}
+  .m .l{font-size:13px;color:var(--fg);margin-top:4px}
+  .m .s{font-size:12px;color:var(--muted);margin-top:3px;opacity:.9}
+  .srcnote{font-size:12px;color:var(--muted);margin:0 0 40px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:0 0 40px}
+  .c{border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+  .c h3{font-size:15px;font-weight:600;margin:0 0 6px}
+  .c p{margin:0;font-size:14px;color:var(--muted)}
+  h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:40px 0 12px}
+  pre{background:var(--code);border:1px solid var(--line);border-radius:12px;
+      padding:14px 16px;overflow-x:auto;font-size:13px;line-height:1.6;margin:0 0 40px}
+  .warn{background:var(--warn-bg);border-radius:12px;padding:18px 20px;margin:0 0 40px}
+  .warn h3{font-size:15px;font-weight:600;margin:0 0 8px}
+  .warn p{margin:0 0 8px;font-size:14px}
+  .warn p:last-child{margin-bottom:0}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:0 0 40px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  td.v{white-space:nowrap;font-variant-numeric:tabular-nums}
+  footer{border-top:1px solid var(--line);padding-top:20px;font-size:13px;color:var(--muted)}
+  a{color:var(--accent)}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="brand">Fracode MCP</div>
+  <div class="lang">
+    <button id="b-ru" class="on" onclick="setLang('ru')">RU</button>
+    <button id="b-en" onclick="setLang('en')">EN</button>
+  </div>
+</header>
+
+<div id="ru">
+  <h1>Долговременная память, которая живёт вне модели</h1>
+  <p class="lede">
+    Ваш агент помнит ровно столько, сколько влезло в контекст. Fracode выносит память
+    в отдельный файл: модель не держит историю в голове, а заглядывает в картотеку.
+    Подключается к любой LLM одним MCP-сервером — веса менять не нужно.
+  </p>
+
+  <div class="metrics">
+    <div class="m"><div class="k">20 Б</div><div class="l">на окно</div>
+      <div class="s">растёт с архивом · против 4096 Б на вектор</div></div>
+    <div class="m"><div class="k">1.1 мс</div><div class="l">собственный поиск</div>
+      <div class="s">на 7 934 окнах</div></div>
+    <div class="m"><div class="k">51 %</div><div class="l">фактов найдено целиком</div>
+      <div class="s">на моём корпусе · 21 % на демо</div></div>
+    <div class="m"><div class="k">2.1 МБ</div><div class="l">пакет памяти</div>
+      <div class="s">перенос агенту B · ответы совпали 20/20</div></div>
+  </div>
+  <p class="srcnote">Каждое число — из файла в <code>evidence/</code>. Таблица с источниками ниже.</p>
+
+  <div class="cards">
+    <div class="c"><h3>Память как файл</h3><p>Весь архив — несколько мегабайт на диске.
+      Отдали файл другому агенту — он читает ту же память и отвечает так же.
+      Проверено сквозняком: позиции и текст совпали 20/20.</p></div>
+    <div class="c"><h3>14 инструментов MCP</h3><p>Записать, найти, связать, проверить,
+      экспортировать, импортировать. Любой MCP-клиент: Claude Desktop, Cursor,
+      свой агент.</p></div>
+    <div class="c"><h3>Память себя проверяет</h3><p>Архив знает, каким энкодером он записан,
+      и откажется открываться чужим — вместо того чтобы тихо врать. Контрольный
+      запрос-ерунда даёт ровно 0.0000.</p></div>
+  </div>
+
+  <h2>Подключение</h2>
+  <pre>{"mcpServers": {"fracode": {
+  "command": "python",
+  "args": ["frakod_mcp.py"]
+}}}</pre>
+
+  <h2>Пять минут до своих чисел</h2>
+  <pre>pip install -r requirements.txt
+
+python make_demo_corpus.py --out demo_corpus.txt --n 2000
+python make_bench.py --corpus demo_corpus.txt --out demo_bench.json --n 120
+
+FRK_ENCODER=ollama FRK_EMBED_MODEL=bge-m3 FRK_TOK=tok_v8_dialog.json \
+FRK_NO_KEYS=1 FRK_CORPUS=demo_corpus.txt FRK_OUTD=frakod_index_demo \
+  python frakod_index_build.py
+
+FRK_IDXD=frakod_index_demo FRK_PORT=8781 python frakod_api.py
+FRK_BENCH=demo_bench.json python _bench_fact.py</pre>
+
+  <h2>Откуда числа</h2>
+  <table>
+    <tr><th>Число</th><th>Что это</th><th>Файл-источник</th></tr>
+    <tr><td class="v">20 Б</td>
+        <td>То, что растёт с архивом (<code>b_per_unit_resident</code>): 16 Б квантование
+            + 4 Б идентификатор. Плюс фиксированный кодобук 2.0 МБ — он не растёт с N,
+            поэтому на маленьком архиве полная цена выше (86 Б/окно при 31 595 окнах).</td>
+        <td><code>evidence/storage.json</code></td></tr>
+    <tr><td class="v">1.1 мс</td>
+        <td>Медиана собственного ADC-поиска. Полный круг агент→API→ответ — 90.7 мс,
+            из них 89.4 мс внешний энкодер Ollama. На Fracode приходится 1 % времени.</td>
+        <td><code>evidence/latency_N7934.json</code></td></tr>
+    <tr><td class="v">51 %</td>
+        <td>106 из 207 запросов, фрагмент найден целиком, top-8. 95 % ДИ 44.4–57.5 %.
+            Корпус личный и не публикуется — поэтому то же число на своих данных вы
+            получаете за пять минут.</td>
+        <td><code>evidence/bench_fact_ctx1.json</code></td></tr>
+    <tr><td class="v">21 %</td>
+        <td>То же на демо-корпусе из репозитория (120 вопросов). Намеренно ниже:
+            корпус шаблонный, фрагменты трудноотличимы. Демо проверяет, что пайплайн
+            жив, а не то, насколько хорош поиск.</td>
+        <td><code>evidence/bench_fact_demo.json</code></td></tr>
+    <tr><td class="v">2.1 МБ</td>
+        <td>Экспорт 2 096 692 байт, импорт вторым агентом, те же 20 запросов:
+            позиции 20/20, текст 20/20.</td>
+        <td><code>evidence/transfer_roundtrip.json</code></td></tr>
+  </table>
+
+  <div class="warn">
+    <h3>Честно о границах</h3>
+    <p><strong>Модель не ходит в эту память сама.</strong> Ей нужен энкодер, и он
+      приезжает вместе с архивом: 15 чужих энкодеров дали recall@8 = 0.000 — кодобук
+      является производным от своего энкодера. Память общая, энкодер — нет.</p>
+    <p><strong>Здесь нет ускорения генерации.</strong> При генерации текста Fracode
+      медленнее обычного KV-кэша в 1.6–5.2 раза. Обмен другой: объём памяти, а не
+      скорость. 1.1 мс — это поиск, не генерация.</p>
+    <p><strong>Сильные числа сняты на корпусе, который я не могу опубликовать.</strong>
+      Всё, что лежит в <code>evidence/</code>, получено на моих данных; демо-корпус в
+      репозитории даёт 21 %, а не 51 %. Подробнее — раздел «Что честно НЕ показано»
+      в README.</p>
+  </div>
+</div>
+
+<div id="en" class="hide">
+  <h1>Long-term memory that lives outside the model</h1>
+  <p class="lede">
+    Your agent remembers exactly as much as fits into its context. Fracode moves memory
+    into a separate file: the model does not keep the history in its head, it looks it
+    up in a card catalogue. Connects to any LLM with a single MCP server — no weight
+    changes needed.
+  </p>
+
+  <div class="metrics">
+    <div class="m"><div class="k">20 B</div><div class="l">per window</div>
+      <div class="s">grows with the archive · vs 4096 B per vector</div></div>
+    <div class="m"><div class="k">1.1 ms</div><div class="l">own search</div>
+      <div class="s">at 7,934 windows</div></div>
+    <div class="m"><div class="k">51 %</div><div class="l">facts found whole</div>
+      <div class="s">on my corpus · 21 % on the demo</div></div>
+    <div class="m"><div class="k">2.1 MB</div><div class="l">memory package</div>
+      <div class="s">handed to agent B · answers matched 20/20</div></div>
+  </div>
+  <p class="srcnote">Every number comes from a file in <code>evidence/</code>. Sources below.</p>
+
+  <div class="cards">
+    <div class="c"><h3>Memory as a file</h3><p>The whole archive is a few megabytes on disk.
+      Hand the file to another agent and it reads the same memory and answers the same
+      way. Verified end to end: positions and text matched 20/20.</p></div>
+    <div class="c"><h3>14 MCP tools</h3><p>Write, find, link, verify, export, import. Any MCP
+      client: Claude Desktop, Cursor, your own agent.</p></div>
+    <div class="c"><h3>Memory checks itself</h3><p>The archive knows which encoder wrote it and
+      refuses to be opened by a foreign one — instead of quietly lying. A nonsense
+      control query scores exactly 0.0000.</p></div>
+  </div>
+
+  <h2>Connect</h2>
+  <pre>{"mcpServers": {"fracode": {
+  "command": "python",
+  "args": ["frakod_mcp.py"]
+}}}</pre>
+
+  <h2>Five minutes to your own numbers</h2>
+  <pre>pip install -r requirements.txt
+
+python make_demo_corpus.py --out demo_corpus.txt --n 2000
+python make_bench.py --corpus demo_corpus.txt --out demo_bench.json --n 120
+
+FRK_ENCODER=ollama FRK_EMBED_MODEL=bge-m3 FRK_TOK=tok_v8_dialog.json \
+FRK_NO_KEYS=1 FRK_CORPUS=demo_corpus.txt FRK_OUTD=frakod_index_demo \
+  python frakod_index_build.py
+
+FRK_IDXD=frakod_index_demo FRK_PORT=8781 python frakod_api.py
+FRK_BENCH=demo_bench.json python _bench_fact.py</pre>
+
+  <h2>Where the numbers come from</h2>
+  <table>
+    <tr><th>Number</th><th>What it is</th><th>Source file</th></tr>
+    <tr><td class="v">20 B</td>
+        <td>What grows with the archive (<code>b_per_unit_resident</code>): 16 B quantisation
+            + 4 B identifier. Plus a fixed 2.0 MB codebook that does not grow with N,
+            so a small archive pays more per window (86 B/window at 31,595 windows).</td>
+        <td><code>evidence/storage.json</code></td></tr>
+    <tr><td class="v">1.1 ms</td>
+        <td>Median of our own ADC search. The full agent→API→answer round trip is 90.7 ms,
+            of which 89.4 ms is the external Ollama encoder. 1 % of the time is ours.</td>
+        <td><code>evidence/latency_N7934.json</code></td></tr>
+    <tr><td class="v">51 %</td>
+        <td>106 of 207 queries, fragment found whole, top-8. 95 % CI 44.4–57.5 %. The
+            corpus is personal and cannot be published — which is why you get your own
+            number in five minutes.</td>
+        <td><code>evidence/bench_fact_ctx1.json</code></td></tr>
+    <tr><td class="v">21 %</td>
+        <td>The same on the demo corpus shipped in the repo (120 questions). Deliberately
+            lower: the corpus is templated and its fragments are hard to tell apart. The
+            demo proves the pipeline is alive, not that retrieval is good.</td>
+        <td><code>evidence/bench_fact_demo.json</code></td></tr>
+    <tr><td class="v">2.1 MB</td>
+        <td>Export of 2,096,692 bytes, imported by a second agent, same 20 queries:
+            positions 20/20, text 20/20.</td>
+        <td><code>evidence/transfer_roundtrip.json</code></td></tr>
+  </table>
+
+  <div class="warn">
+    <h3>Honestly, about the limits</h3>
+    <p><strong>The model does not walk into this memory by itself.</strong> It needs the
+      encoder, and the encoder travels with the archive: 15 foreign encoders scored
+      recall@8 = 0.000 — the codebook is a derivative of its own encoder. The memory is
+      shareable; the encoder is not.</p>
+    <p><strong>There is no generation speed-up here.</strong> When generating text,
+      Fracode is 1.6–5.2× slower than a plain KV cache. The trade is memory volume, not
+      speed. The 1.1 ms is search, not generation.</p>
+    <p><strong>The strong numbers come from a corpus I cannot publish.</strong> Everything
+      in <code>evidence/</code> was measured on my own data; the demo corpus in the repo
+      gives 21 %, not 51 %. See “What is honestly NOT shown” in the README.</p>
+  </div>
+</div>
+
+<footer>
+  <div>GPL-3.0 · <a id="repo" href="https://github.com/masterofnuggets313/chaotic-llm/tree/fracode-mcp">исходники на GitHub</a></div>
+  <div style="margin-top:6px">Лендинг — один HTML-файл, наружу ничего не тянет.</div>
+</footer>
+
+</div>
+<script>
+function setLang(l){
+  var ru = l === 'ru';
+  document.getElementById('ru').className = ru ? '' : 'hide';
+  document.getElementById('en').className = ru ? 'hide' : '';
+  document.getElementById('b-ru').className = ru ? 'on' : '';
+  document.getElementById('b-en').className = ru ? '' : 'on';
+  document.documentElement.lang = l;
+  document.getElementById('repo').textContent =
+    ru ? 'исходники на GitHub' : 'source code on GitHub';
+  try { localStorage.setItem('fracode-lang', l); } catch (e) {}
+}
+try {
+  var s = localStorage.getItem('fracode-lang');
+  if (s === 'en' || (!s && (navigator.language || '').toLowerCase().indexOf('en') === 0))
+    setLang('en');
+} catch (e) {}
+</script>
+</body>
+</html>
