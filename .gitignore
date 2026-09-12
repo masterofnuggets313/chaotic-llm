@@ -24,7 +24,9 @@ runs/_idcache/
 !runs/bench_fact_ctx2.json
 !runs/fact_paired_ctx1_vs_ctx0.json
 !runs/transfer_roundtrip.json
-!runs/mcp_stdio_test.json
+# mcp_stdio_test.json здесь НЕ исключается: в дерево публикации он попадает как
+# evidence/mcp_stdio_test.json, а в runs/ он просто рабочий артефакт прогона.
+# Исключение для него держало в опубликованной ветке второй экземпляр файла.
 
 # --- собранные индексы: строятся локально, до 2 ГБ ---
 frakod_index
